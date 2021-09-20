@@ -1,0 +1,465 @@
+<template>
+  <div class="createPost-container">
+    <el-form ref="postForm" label-position="top" :model="postForm" :rule="rules" class="form-container">
+      <sticky :class-name="'sub-navbar '+ (postForm.is_draft ? 'draft' : 'published')">
+        <el-button
+          v-loading="loading"
+          style="margin-left: 10px;"
+          type="success"
+          @click="submitForm"
+        >
+          Submit
+        </el-button>
+        <el-button v-loading="loading" type="warning" @click="draftForm">
+          Draft
+        </el-button>
+      </sticky>
+      <div class="createPost-main-container">
+        <el-descriptions title="Comic Info">
+          <el-descriptions-item label="View Count">{{ postForm.views }}</el-descriptions-item>
+          <el-descriptions-item label="Favorite Count">{{ postForm.favorites_count }}</el-descriptions-item>
+        </el-descriptions>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item style="margin-bottom: 40px;" prop="title">
+              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
+                Title
+              </MDinput>
+            </el-form-item>
+
+            <div class="postInfo-container">
+              <el-row>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="Authors:" class="postInfo-container-item">
+                    <el-select
+                      v-model="postForm.authors"
+                      filterable
+                      multiple
+                      placeholder="Search user"
+                    >
+                      <el-option
+                        v-for="(item,index) in authorListOptions"
+                        :key="'author-' + item.id + '-' + index"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="Genres:" class="postInfo-container-item">
+                    <el-select
+                      v-model="postForm.genres"
+                      filterable
+                      multiple
+                      placeholder="Genre"
+                    >
+                      <el-option
+                        v-for="(item,index) in genreListOptions"
+                        :key="'genre-' + item.id + '-' + index"
+                        :label="item.name"
+                        :value="item.name"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="Release Date:" class="postInfo-container-item">
+                    <el-date-picker
+                      v-model="postForm.release_date"
+                      type="date"
+                      placeholder="Pick a day"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+        </el-row>
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Description:">
+          <el-input
+            v-model="postForm.description"
+            :rows="1"
+            type="textarea"
+            class="comic-textarea"
+            autosize
+            placeholder="Please enter description"
+          />
+        </el-form-item>
+        <el-form-item prop="cover_url" style="margin-bottom: 30px;" label-width="80px" label="Cover Image:">
+          <Upload v-model="postForm.cover_url" />
+        </el-form-item>
+        <div>
+          <el-card v-for="(chapter, idx) in postForm.chapters" :key="'chapter-' + idx" class="box-card" style="margin-bottom: 30px;">
+            <div slot="header" class="clearfix" @click="toggleChapterAccordion(chapter.id)">
+              <span>Chapter {{ chapter.chapter }}</span>
+              <div style="float: right; padding: 3px 0">
+                <el-button @click="removeChapter(idx)">Remove Chapter</el-button>
+                <el-button @click="addChapterAfter(idx)">Insert Chapter After</el-button>
+              </div>
+            </div>
+            <div>
+              asdfasdkljlkasdjlksdajlkjlskdal;dsajlksdfksdfjkl {{chapterAccordion[chapter.id] ? 'asdf' : 'qwer'}}
+            </div>
+          </el-card>
+        </div>
+      </div>
+    </el-form>
+    <!-- <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
+      <sticky :class-name="'sub-navbar '+postForm.is_draft">
+        <CommentDropdown v-model="postForm.comment_disabled" />
+        <PlatformDropdown v-model="postForm.platforms" />
+        <SourceUrlDropdown v-model="postForm.source_uri" />
+        <el-button
+          v-loading="loading"
+          style="margin-left: 10px;"
+          type="success"
+          @click="submitForm"
+        >
+          Submit
+        </el-button>
+        <el-button v-loading="loading" type="warning" @click="draftForm">
+          Draft
+        </el-button>
+      </sticky>
+
+      <div class="createPost-main-container">
+        <el-row>
+          <el-col :span="24">
+            <el-form-item style="margin-bottom: 40px;" prop="title">
+              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
+                Title
+              </MDinput>
+            </el-form-item>
+
+            <div class="postInfo-container">
+              <el-row>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="Author:" class="postInfo-container-item">
+                    <el-select
+                      v-model="postForm.author"
+                      :remote-method="getAuthorList"
+                      filterable
+                      remote
+                      placeholder="Search user"
+                    >
+                      <el-option
+                        v-for="(item,index) in authorListOptions"
+                        :key="item+index"
+                        :label="item"
+                        :value="item"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="10">
+                  <el-form-item
+                    label-width="120px"
+                    label="Published date:"
+                    class="postInfo-container-item"
+                  >
+                    <el-date-picker
+                      v-model="postForm.display_time"
+                      type="datetime"
+                      format="yyyy-MM-dd HH:mm:ss"
+                      placeholder="Select date and time"
+                    />
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="6">
+                  <el-form-item
+                    label-width="80px"
+                    label="Important:"
+                    class="postInfo-container-item"
+                  >
+                    <el-rate
+                      v-model="postForm.importance"
+                      :max="3"
+                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                      :low-threshold="1"
+                      :high-threshold="3"
+                      style="margin-top:8px;"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+        </el-row>
+
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Summary:">
+          <el-input
+            v-model="postForm.content_short"
+            :rows="1"
+            type="textarea"
+            class="article-textarea"
+            autosize
+            placeholder="Please enter the content"
+          />
+          <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }} word</span>
+        </el-form-item>
+
+        <el-form-item prop="content" style="margin-bottom: 30px;">
+          <Tinymce ref="editor" v-model="postForm.content" :height="400" />
+        </el-form-item>
+
+        <el-form-item prop="cover_url" style="margin-bottom: 30px;">
+          <Upload v-model="postForm.cover_url" />
+        </el-form-item>
+      </div>
+    </el-form> -->
+    <button @click="tester">asdf</button>
+  </div>
+</template>
+
+<script>
+// import Tinymce from '@/components/Tinymce';
+import Upload from '@/components/Upload/SingleImage';
+import MDinput from '@/components/MDinput';
+import Sticky from '@/components/Sticky'; // Sticky header
+import { validURL } from '@/utils/validate';
+import { fetchComic } from '@/api/comic';
+import Resource from '@/api/resource';
+const authorResource = new Resource('authors');
+const genreResource = new Resource('genres');
+// import { userSearch } from '@/api/search';
+// import {
+//   CommentDropdown,
+//   PlatformDropdown,
+//   SourceUrlDropdown,
+// } from './Dropdown';
+
+const defaultForm = {
+  is_draft: true,
+  authors: [],
+  title: '',
+  content: '',
+  content_short: '',
+  source_uri: '',
+  cover_url: '',
+  display_time: undefined,
+  id: undefined,
+  platforms: ['a-platform'],
+  comment_disabled: false,
+  importance: 0,
+};
+
+export default {
+  name: 'ComicDetail',
+  components: {
+    // Tinymce,
+    MDinput,
+    Upload,
+    Sticky,
+    // CommentDropdown,
+    // PlatformDropdown,
+    // SourceUrlDropdown,
+  },
+  props: {
+    isEdit: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    const validateRequire = (rule, value, callback) => {
+      if (value === '') {
+        this.$message({
+          message: rule.field + ' is required',
+          type: 'error',
+        });
+        callback(new Error(rule.field + ' is required'));
+      } else {
+        callback();
+      }
+    };
+    const validateSourceUri = (rule, value, callback) => {
+      if (value) {
+        if (validURL(value)) {
+          callback();
+        } else {
+          this.$message({
+            message: 'External URL is invalid.',
+            type: 'error',
+          });
+          callback(new Error('External URL is invalid.'));
+        }
+      } else {
+        callback();
+      }
+    };
+    return {
+      postForm: Object.assign({}, defaultForm),
+      loading: false,
+      authorListOptions: [],
+      genreListOptions: [],
+      rules: {
+        cover_url: [{ validator: validateRequire }],
+        title: [{ validator: validateRequire }],
+        content: [{ validator: validateRequire }],
+        source_uri: [{ validator: validateSourceUri, trigger: 'blur' }],
+      },
+      tempRoute: {},
+      chapterAccordion: {},
+    };
+  },
+  computed: {
+    contentShortLength() {
+      return this.postForm.content_short.length;
+    },
+    lang() {
+      return this.$store.getters.language;
+    },
+  },
+  created() {
+    this.getAuthorList();
+    this.getGenreList();
+    if (this.isEdit) {
+      const id = this.$route.params && this.$route.params.id;
+      this.fetchData(id);
+    } else {
+      this.postForm = Object.assign({}, defaultForm);
+    }
+
+    // Why need to make a copy of this.$route here?
+    // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
+    this.tempRoute = Object.assign({}, this.$route);
+  },
+  methods: {
+    removeChapter(index){
+      console.log(index);
+    },
+    addChapterAfter(index){
+      console.log(index);
+    },
+    tester(){
+      console.log(typeof this.postForm.cover_url);
+    },
+    toggleChapterAccordion(cptId){
+      console.log(this.chapterAccordion[cptId]);
+      this.chapterAccordion[cptId] = !this.chapterAccordion[cptId];
+    },
+    fetchData(id) {
+      fetchComic(id)
+        .then(response => {
+          this.postForm = response.data;
+          this.postForm.chapters.forEach((el) => {
+            this.chapterAccordion[el.id] = false;
+          });
+          this.postForm.authors = this.postForm.authors.map((el) => {
+            return el.id;
+          });
+          this.postForm.genres = JSON.parse(this.postForm.genres);
+          // Just for test
+          // this.postForm.title += `   Article Id:${this.postForm.id}`;
+          // this.postForm.content_short += `   Article Id:${this.postForm.id}`;
+
+          // Set tagsview title
+          this.setTagsViewTitle();
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    setTagsViewTitle() {
+      const title =
+        this.lang === 'zh'
+          ? '编辑文章'
+          : this.lang === 'vi'
+            ? 'Chỉnh sửa'
+            : 'Edit Article'; // Should move to i18n
+      const route = Object.assign({}, this.tempRoute, {
+        title: `${title}-${this.postForm.id}`,
+      });
+      this.$store.dispatch('updateVisitedView', route);
+    },
+    submitForm() {
+      this.postForm.display_time = parseInt(this.display_time / 1000);
+      this.$refs.postForm.validate(valid => {
+        if (valid) {
+          this.loading = true;
+          this.$notify({
+            title: 'Success',
+            message: 'Article has been published successfully',
+            type: 'success',
+            duration: 2000,
+          });
+          this.postForm.is_draft = false;
+          this.loading = false;
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    draftForm() {
+      if (
+        this.postForm.content.length === 0 ||
+        this.postForm.title.length === 0
+      ) {
+        this.$message({
+          message: 'Please enter required title and content',
+          type: 'warning',
+        });
+        return;
+      }
+      this.$message({
+        message: 'Successfully saved',
+        type: 'success',
+        showClose: true,
+        duration: 1000,
+      });
+      this.postForm.is_draft = true;
+    },
+    getGenreList(query) {
+      console.log(query);
+      genreResource.list().then(response => {
+        if (!response.data.items) {
+          return;
+        }
+        this.genreListOptions = response.data.items;
+      });
+    },
+    getAuthorList(query) {
+      console.log(query);
+      authorResource.list().then(response => {
+        if (!response.data.items) {
+          return;
+        }
+        this.authorListOptions = response.data.items;
+      });
+    },
+  },
+};
+</script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+@import "~@/styles/mixin.scss";
+.createPost-container {
+  position: relative;
+  .createPost-main-container {
+    padding: 0 45px 20px 50px;
+    .postInfo-container {
+      position: relative;
+      @include clearfix;
+      margin-bottom: 10px;
+      .postInfo-container-item {
+        float: left;
+      }
+    }
+  }
+  .word-counter {
+    width: 40px;
+    position: absolute;
+    right: -10px;
+    top: 0px;
+  }
+}
+</style>
+<style>
+.createPost-container label.el-form-item__label {
+  text-align: left;
+}
+</style>

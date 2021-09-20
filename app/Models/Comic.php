@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Filters\Get;
+use App\Filters\Limit;
+use App\Filters\Search;
+use App\Filters\With;
 use App\Traits\Pipeable;
 use Illuminate\Database\Eloquent\Model;
 use tizis\laraComments\Contracts\ICommentable;
@@ -12,6 +16,15 @@ class Comic extends Model implements ICommentable
     use Commentable;
     use Pipeable;
     protected $guarded = [];
+
+    public function pipeable(){
+        return [
+            Get::class,
+            With::class,
+            Limit::class,
+            Search::class,
+        ];
+    }
 
     public function authors(){
         return $this->belongsToMany(Author::class);

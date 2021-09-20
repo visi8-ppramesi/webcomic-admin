@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Genre;
+use App\Laravue\JsonResponse;
+use App\Models\Genre;
 use Illuminate\Http\Request;
 
 class GenreController extends Controller
@@ -14,7 +15,7 @@ class GenreController extends Controller
      */
     public function index()
     {
-        return response()->json(Genre::all(), 200);
+        return response()->json(new JsonResponse(['items' => Genre::all()]), 200);
     }
 
     /**

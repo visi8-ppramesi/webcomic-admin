@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\ComicController;
+use App\Http\Controllers\GenreController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,11 +43,23 @@ Route::namespace('Api')->group(function() {
         Route::put('users/{user}/permissions', 'UserController@updatePermissions')->middleware('permission:' .Acl::PERMISSION_PERMISSION_MANAGE);
         Route::get('roles/{role}/permissions', 'RoleController@permissions')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
 
-        Route::get('comics', 'ComicController@index');
-        Route::get('comics/{comic}', 'ComicController@show');
-        Route::post('comic', 'ComicController@store');
-        Route::patch('comic/{comic}', 'ComicController@update');
-        Route::delete('comic/{comic}', 'ComicController@destroy');
+        Route::get('comics', [ComicController::class, 'index']);//'ComicController@index');
+        Route::get('comics/{comic}', [ComicController::class, 'show']);//'ComicController@show');
+        Route::post('comic', [ComicController::class, 'store']);//'ComicController@store');
+        Route::patch('comic/{comic}', [ComicController::class, 'update']);//'ComicController@update');
+        Route::delete('comic/{comic}', [ComicController::class, 'destroy']);//'ComicController@destroy');
+
+        Route::get('authors', [AuthorController::class, 'index']);//'ComicController@index');
+        Route::get('authors/{author}', [AuthorController::class, 'show']);//'AuthorController@show');
+        Route::post('author', [AuthorController::class, 'store']);//'AuthorController@store');
+        Route::patch('author/{author}', [AuthorController::class, 'update']);//'AuthorController@update');
+        Route::delete('author/{author}', [AuthorController::class, 'destroy']);//'AuthorController@destroy');
+
+        Route::get('genres', [GenreController::class, 'index']);//'ComicController@index');
+        Route::get('genres/{genre}', [GenreController::class, 'show']);//'GenreController@show');
+        Route::post('genre', [GenreController::class, 'store']);//'GenreController@store');
+        Route::patch('genre/{genre}', [GenreController::class, 'update']);//'GenreController@update');
+        Route::delete('genre/{genre}', [GenreController::class, 'destroy']);//'GenreController@destroy');
 
         Route::get('chapters', 'ChapterController@index');
         Route::get('chapters/{chapter}', 'ChapterController@show');

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Comic;
+use App\Models\Comic;
 use Illuminate\Http\Request;
+use Illuminate\Contracts\Validation\Rule;
+use \App\Laravue\JsonResponse;
 
 class ComicController extends Controller
 {
@@ -14,7 +16,14 @@ class ComicController extends Controller
      */
     public function index()
     {
-        return response()->json(Comic::pipe(), 200);
+        $comic = Comic::pipe();
+        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
+            $comic = $comic->getCollection();
+        }
+        return response()->json(new JsonResponse([
+            'items' => $comic,
+            'total' => Comic::count()
+        ]));
     }
 
     /**
@@ -58,7 +67,8 @@ class ComicController extends Controller
      */
     public function show(Comic $comic)
     {
-
+        $comic->load(['authors', 'chapters.pages']);
+        return response()->json(new JsonResponse($comic));
     }
 
     /**

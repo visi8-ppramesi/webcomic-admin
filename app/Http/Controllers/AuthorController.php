@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Author;
+use App\Laravue\JsonResponse;
+use App\Models\Author;
 use Illuminate\Http\Request;
 
 class AuthorController extends Controller
@@ -14,7 +15,7 @@ class AuthorController extends Controller
      */
     public function index()
     {
-        return response()->json(Author::pipe(), 200);
+        return response()->json(new JsonResponse(['items' => Author::pipe()]), 200);
     }
 
     /**

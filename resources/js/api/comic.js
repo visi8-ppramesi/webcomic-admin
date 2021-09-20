@@ -12,7 +12,7 @@ export function fetchComic(id, query) {
   return request({
     url: '/comics/' + id,
     method: 'get',
-    params: query
+    params: query,
   });
 }
 

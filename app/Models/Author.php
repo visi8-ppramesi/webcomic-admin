@@ -12,4 +12,8 @@ class Author extends Model
     public function comics(){
         return $this->belongsToMany(Comic::class);
     }
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }
