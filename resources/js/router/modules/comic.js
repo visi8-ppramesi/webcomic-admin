@@ -1,7 +1,7 @@
 /** When your routing table is too long, you can split it into small modules**/
 import Layout from '@/layout';
 
-const comicsRoutes = {
+const comicRoutes = {
   path: '/comics',
   component: Layout,
   redirect: 'noredirect',
@@ -35,4 +35,4 @@ const comicsRoutes = {
   ],
 };
 
-export default comicsRoutes;
+export default comicRoutes;

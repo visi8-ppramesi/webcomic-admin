@@ -15,7 +15,14 @@ class AuthorController extends Controller
      */
     public function index()
     {
-        return response()->json(new JsonResponse(['items' => Author::pipe()]), 200);
+        $author = Author::pipe();
+        if(get_parent_class($author) === 'Illuminate\Pagination\AbstractPaginator'){
+            $author = $author->getCollection();
+        }
+        return response()->json(new JsonResponse([
+            'items' => $author,
+            'total' => Author::count()
+        ]));
     }
 
     /**

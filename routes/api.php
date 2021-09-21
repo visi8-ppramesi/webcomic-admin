@@ -186,3 +186,11 @@ Route::get('articles/{id}/pageviews', function ($id) {
 
     return response()->json(new JsonResponse(['pvData' => $data]));
 });
+
+Route::post('testing', function(Request $request){
+    return response()->json($request, 200);
+});
+Route::get('template/scene', function(){
+    $template = file_get_contents(base_path('stubs/Scene.html.stub'));
+    return response()->json($template, 200);
+});

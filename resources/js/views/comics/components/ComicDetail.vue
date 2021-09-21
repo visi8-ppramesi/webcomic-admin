@@ -15,7 +15,7 @@
         </el-button>
       </sticky>
       <div class="createPost-main-container">
-        <el-descriptions title="Comic Info">
+        <el-descriptions title="Comic Info" style="margin-top:36px;">
           <el-descriptions-item label="View Count">{{ postForm.views }}</el-descriptions-item>
           <el-descriptions-item label="Favorite Count">{{ postForm.favorites_count }}</el-descriptions-item>
         </el-descriptions>
@@ -98,8 +98,86 @@
                 <el-button @click="addChapterAfter(idx)">Insert Chapter After</el-button>
               </div>
             </div>
-            <div>
-              asdfasdkljlkasdjlksdajlkjlskdal;dsajlksdfksdfjkl {{chapterAccordion[chapter.id] ? 'asdf' : 'qwer'}}
+            <div v-if="chapterAccordion[chapter.id]">
+              <el-descriptions title="Chapter Info" style="margin-top:36px;">
+                <el-descriptions-item label="View Count">{{ chapter.views }}</el-descriptions-item>
+                <el-descriptions-item label="Favorite Count">{{ chapter.favorites_count }}</el-descriptions-item>
+              </el-descriptions>
+              <el-form-item prop="image_url" style="margin-bottom: 30px;" label-width="80px" label="Chapter Preview Image:">
+                <Upload v-model="postForm.chapters[idx].image_url" />
+              </el-form-item>
+              <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Chapter:">
+                <el-input
+                  v-model="postForm.chapters[idx].chapter"
+                  :rows="1"
+                  autosize
+                />
+              </el-form-item>
+              <el-row>
+                <el-col :span="12">
+                  <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Token Price:">
+                    <el-input
+                      v-model="postForm.chapters[idx].token_price"
+                      :rows="1"
+                      autosize
+                    />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item style="margin-bottom: 40px;" label-width="80px" label="AR Token Price:">
+                    <el-input
+                      v-model="postForm.chapters[idx].token_price_ar"
+                      :rows="1"
+                      autosize
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="24">
+                  <el-form-item label-width="80px" label="Release Date:" class="postInfo-container-item">
+                    <el-date-picker
+                      v-model="postForm.chapters[idx].release_date"
+                      type="date"
+                      placeholder="Pick a day"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-card v-for="(page, pidx) in chapter.pages" :key="'pages-' + pidx + '-' + chapter.id" class="box-card" style="margin-bottom: 30px;">
+                <div slot="header" class="clearfix" @click="togglePageAccordion(page.id)">
+                  <span>Page {{ page.section }}</span>
+                  <div style="float: right; padding: 3px 0">
+                    <el-button @click="removePage(idx, pidx)">Remove Page</el-button>
+                    <el-button @click="addPageAfter(idx, pidx)">Insert Page After</el-button>
+                  </div>
+                </div>
+                <div v-if="pageAccordion[page.id]">
+                  <el-form-item prop="image_url" style="margin-bottom: 30px;" label-width="80px" label="Page Image:">
+                    <Upload v-model="postForm.chapters[idx].pages[pidx].image_url" />
+                  </el-form-item>
+                  <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Scene Element:">
+                    <el-input
+                      v-model="postForm.chapters[idx].pages[pidx].scene"
+                      :rows="10"
+                      type="textarea"
+                      class="comic-textarea"
+                      autosize
+                      placeholder="Please enter description"
+                    />
+                  </el-form-item>
+                  <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Scene Config:">
+                    <el-input
+                      v-model="postForm.chapters[idx].pages[pidx].config"
+                      :rows="10"
+                      type="textarea"
+                      class="comic-textarea"
+                      autosize
+                      placeholder="Please enter description"
+                    />
+                  </el-form-item>
+                </div>
+              </el-card>
             </div>
           </el-card>
         </div>
@@ -210,7 +288,6 @@
         </el-form-item>
       </div>
     </el-form> -->
-    <button @click="tester">asdf</button>
   </div>
 </template>
 
@@ -303,6 +380,7 @@ export default {
       },
       tempRoute: {},
       chapterAccordion: {},
+      pageAccordion: {},
     };
   },
   computed: {
@@ -334,12 +412,26 @@ export default {
     addChapterAfter(index){
       console.log(index);
     },
+    removePage(index){
+      console.log(index);
+    },
+    addPageAfter(index){
+      console.log(index);
+    },
     tester(){
       console.log(typeof this.postForm.cover_url);
     },
+    togglePageAccordion(pageId){
+      const tempAccordion = Object.assign({}, this.pageAccordion);
+      tempAccordion[pageId] = !tempAccordion[pageId];
+      this.pageAccordion = tempAccordion;
+      console.log(this.pageAccordion[pageId]);
+    },
     toggleChapterAccordion(cptId){
+      const tempAccordion = Object.assign({}, this.chapterAccordion);
+      tempAccordion[cptId] = !tempAccordion[cptId];
+      this.chapterAccordion = tempAccordion;
       console.log(this.chapterAccordion[cptId]);
-      this.chapterAccordion[cptId] = !this.chapterAccordion[cptId];
     },
     fetchData(id) {
       fetchComic(id)
@@ -347,6 +439,9 @@ export default {
           this.postForm = response.data;
           this.postForm.chapters.forEach((el) => {
             this.chapterAccordion[el.id] = false;
+            el.pages.forEach((pel) => {
+              this.pageAccordion[pel.id] = false;
+            });
           });
           this.postForm.authors = this.postForm.authors.map((el) => {
             return el.id;
@@ -376,23 +471,23 @@ export default {
       this.$store.dispatch('updateVisitedView', route);
     },
     submitForm() {
-      this.postForm.display_time = parseInt(this.display_time / 1000);
-      this.$refs.postForm.validate(valid => {
-        if (valid) {
-          this.loading = true;
-          this.$notify({
-            title: 'Success',
-            message: 'Article has been published successfully',
-            type: 'success',
-            duration: 2000,
-          });
-          this.postForm.is_draft = false;
-          this.loading = false;
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
+      // this.postForm.display_time = parseInt(this.display_time / 1000);
+      // this.$refs.postForm.validate(valid => {
+      //   if (valid) {
+      //     this.loading = true;
+      //     this.$notify({
+      //       title: 'Success',
+      //       message: 'Article has been published successfully',
+      //       type: 'success',
+      //       duration: 2000,
+      //     });
+      //     this.postForm.is_draft = false;
+      //     this.loading = false;
+      //   } else {
+      //     console.log('error submit!!');
+      //     return false;
+      //   }
+      // });
     },
     draftForm() {
       if (

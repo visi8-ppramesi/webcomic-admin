@@ -19,6 +19,7 @@ import chartsRoutes from './modules/charts';
 import tableRoutes from './modules/table';
 import adminRoutes from './modules/admin';
 import comicRoutes from './modules/comic';
+import authorRoutes from './modules/author';
 import nestedRoutes from './modules/nested';
 import errorRoutes from './modules/error';
 import excelRoutes from './modules/excel';
@@ -143,6 +144,7 @@ export const asyncRoutes = [
   tableRoutes,
   adminRoutes,
   comicRoutes,
+  authorRoutes,
   {
     path: '/theme',
     component: Layout,
