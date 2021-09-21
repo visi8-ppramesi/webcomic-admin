@@ -12,6 +12,12 @@ const authorRoutes = {
       name: 'Author',
       meta: { title: 'Author', icon: 'user', noCache: true },
     },
+    {
+      path: 'create',
+      component: () => import('@/views/authors/Create'),
+      name: 'Author',
+      meta: { title: 'Add Author', icon: 'user', noCache: true },
+    },
   ],
 };
 
