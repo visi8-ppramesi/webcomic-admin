@@ -25,15 +25,15 @@ export function fetchPv(id) {
 
 export function createComic(data) {
   return request({
-    url: '/comic/create',
+    url: '/comic',
     method: 'post',
     data,
   });
 }
 
-export function updateComic(data) {
+export function updateComic(data, id) {
   return request({
-    url: '/comic/update',
+    url: '/comic/' + id,
     method: 'patch',
     data,
   });

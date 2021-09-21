@@ -6,6 +6,8 @@ use App\Models\Comic;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Validation\Rule;
 use \App\Laravue\JsonResponse;
+use App\Rules\ComicChapter;
+use App\Services\ComicService;
 
 class ComicController extends Controller
 {
@@ -42,21 +44,21 @@ class ComicController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, ComicService $comicService)
     {
         $validated = $request->validate([
-            'name' => ['string', 'required', 'max:140'],
+            'title' => ['string', 'required', 'max:140'],
             'description' => ['string', 'required'],
-            'tags' => ['json', 'required'],
-            'genres' => ['json', 'required'],
-            'cover_url' => ['file', 'required'],
+            'tags' => ['array', 'required'],
+            'genres' => ['array', 'required'],
+            'cover_url' => ['is_uri_or_url', 'required'],
             'release_date' => ['date', 'required'],
-            'is_draft' => ['boolean', 'required']
+            'is_draft' => ['boolean', 'required'],
+            'chapters' => [new ComicChapter()]
         ]);
+        $created = $comicService->createComicWithChaptersPages($request->all());
 
-        $validated['cover_url'] = $this->storeFileFromRequest($request, 'cover_url', 'public/media/covers');
-
-        return response()->json(Comic::create($validated), 200);
+        return response()->json($created, 200);
     }
 
     /**
@@ -89,23 +91,21 @@ class ComicController extends Controller
      * @param  \App\Comic  $comic
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Comic $comic)
+    public function update(Request $request, Comic $comic, ComicService $comicService)
     {
         $validated = $request->validate([
-            'name' => ['string', 'max:140'],
-            'description' => ['string'],
-            'tags' => ['json'],
-            'genres' => ['json'],
-            'cover_url' => ['file'],
-            'release_date' => ['date'],
-            'is_draft' => ['boolean']
+            'title' => ['string', 'required', 'max:140'],
+            'description' => ['string', 'required'],
+            'tags' => ['array', 'required'],
+            'genres' => ['array', 'required'],
+            'cover_url' => ['is_uri_or_url', 'required'],
+            'release_date' => ['date', 'required'],
+            'is_draft' => ['boolean', 'required'],
+            'chapters' => [new ComicChapter()]
         ]);
+        $updated = $comicService->updateComicWithChaptersPages($request->all());
 
-        if(!empty($validated['cover_url'])){
-            $validated['cover_url'] = $this->storeFileFromRequest($request, 'cover_url', 'public/media/covers');
-        }
-
-        return response()->json($comic->update($validated), 200);
+        return response()->json($updated, 200);
     }
 
     /**

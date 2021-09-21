@@ -10,4 +10,11 @@ class Comment extends laraComment
     public function canUserDelete(User $user){
         return true;
     }
+
+    protected static function boot(){
+        parent::boot();
+        parent::deleting(function($comment){
+            $comment->children->map(function($cmt){$cmt->delete();});
+        });
+    }
 }

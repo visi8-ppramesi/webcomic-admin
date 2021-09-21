@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Tag;
+use App\Laravue\JsonResponse;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class TagController extends Controller
@@ -14,7 +15,7 @@ class TagController extends Controller
      */
     public function index()
     {
-        return response()->json(Tag::all(), 200);
+        return response()->json(new JsonResponse(['items' => Tag::all()]), 200);
     }
 
     /**

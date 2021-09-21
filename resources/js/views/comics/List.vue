@@ -129,7 +129,7 @@ export default {
       this.getList();
     },
     handleCreate(){
-
+      this.$router.push('/comics/create');
     },
   },
 };

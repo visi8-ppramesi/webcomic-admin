@@ -15,7 +15,7 @@
         </el-button>
       </sticky>
       <div class="createPost-main-container">
-        <el-descriptions title="Comic Info" style="margin-top:36px;">
+        <el-descriptions v-if="isEdit" title="Comic Info" style="margin-top:36px;">
           <el-descriptions-item label="View Count">{{ postForm.views }}</el-descriptions-item>
           <el-descriptions-item label="Favorite Count">{{ postForm.favorites_count }}</el-descriptions-item>
         </el-descriptions>
@@ -29,7 +29,7 @@
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="8">
+                <el-col :span="6">
                   <el-form-item label-width="80px" label="Authors:" class="postInfo-container-item">
                     <el-select
                       v-model="postForm.authors"
@@ -46,7 +46,7 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="6">
                   <el-form-item label-width="80px" label="Genres:" class="postInfo-container-item">
                     <el-select
                       v-model="postForm.genres"
@@ -63,12 +63,29 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="6">
+                  <el-form-item label-width="80px" label="Tags:" class="postInfo-container-item">
+                    <el-select
+                      v-model="postForm.tags"
+                      filterable
+                      multiple
+                      placeholder="Tag"
+                    >
+                      <el-option
+                        v-for="(item,index) in tagListOptions"
+                        :key="'tag-' + item.id + '-' + index"
+                        :label="item.name"
+                        :value="item.name"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="6">
                   <el-form-item label-width="80px" label="Release Date:" class="postInfo-container-item">
                     <el-date-picker
                       v-model="postForm.release_date"
                       type="date"
-                      placeholder="Pick a day"
+                      placeholder="Select comic release date"
                     />
                   </el-form-item>
                 </el-col>
@@ -91,15 +108,15 @@
         </el-form-item>
         <div>
           <el-card v-for="(chapter, idx) in postForm.chapters" :key="'chapter-' + idx" class="box-card" style="margin-bottom: 30px;">
-            <div slot="header" class="clearfix" @click="toggleChapterAccordion(chapter.id)">
+            <div slot="header" class="clearfix" @click="toggleChapterAccordion(idx)">
               <span>Chapter {{ chapter.chapter }}</span>
               <div style="float: right; padding: 3px 0">
-                <el-button @click="removeChapter(idx)">Remove Chapter</el-button>
-                <el-button @click="addChapterAfter(idx)">Insert Chapter After</el-button>
+                <el-button v-if="postForm.chapters.length > 1" @click.stop="removeChapter(idx)">Remove Chapter</el-button>
+                <el-button @click.stop="addChapterAfter(idx)">Insert Chapter After</el-button>
               </div>
             </div>
-            <div v-if="chapterAccordion[chapter.id]">
-              <el-descriptions title="Chapter Info" style="margin-top:36px;">
+            <div v-if="chapterAccordion[idx]">
+              <el-descriptions v-if="isEdit" title="Chapter Info" style="margin-top:36px;">
                 <el-descriptions-item label="View Count">{{ chapter.views }}</el-descriptions-item>
                 <el-descriptions-item label="Favorite Count">{{ chapter.favorites_count }}</el-descriptions-item>
               </el-descriptions>
@@ -139,20 +156,27 @@
                     <el-date-picker
                       v-model="postForm.chapters[idx].release_date"
                       type="date"
-                      placeholder="Pick a day"
+                      placeholder="Select chapter release date"
                     />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-card v-for="(page, pidx) in chapter.pages" :key="'pages-' + pidx + '-' + chapter.id" class="box-card" style="margin-bottom: 30px;">
-                <div slot="header" class="clearfix" @click="togglePageAccordion(page.id)">
+                <div slot="header" class="clearfix" @click="togglePageAccordion(idx, pidx)">
                   <span>Page {{ page.section }}</span>
                   <div style="float: right; padding: 3px 0">
-                    <el-button @click="removePage(idx, pidx)">Remove Page</el-button>
-                    <el-button @click="addPageAfter(idx, pidx)">Insert Page After</el-button>
+                    <el-button v-if="chapter.pages.length > 1" @click.stop="removePage(idx, pidx)">Remove Page</el-button>
+                    <el-button @click.stop="addPageAfter(idx, pidx)">Insert Page After</el-button>
                   </div>
                 </div>
-                <div v-if="pageAccordion[page.id]">
+                <div v-if="pageAccordion[idx][pidx]">
+                  <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Page:">
+                    <el-input
+                      v-model="postForm.chapters[idx].pages[pidx].section"
+                      :rows="1"
+                      autosize
+                    />
+                  </el-form-item>
                   <el-form-item prop="image_url" style="margin-bottom: 30px;" label-width="80px" label="Page Image:">
                     <Upload v-model="postForm.chapters[idx].pages[pidx].image_url" />
                   </el-form-item>
@@ -163,7 +187,7 @@
                       type="textarea"
                       class="comic-textarea"
                       autosize
-                      placeholder="Please enter description"
+                      placeholder="Please enter scene element"
                     />
                   </el-form-item>
                   <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Scene Config:">
@@ -173,7 +197,7 @@
                       type="textarea"
                       class="comic-textarea"
                       autosize
-                      placeholder="Please enter description"
+                      placeholder="Please enter JSON config"
                     />
                   </el-form-item>
                 </div>
@@ -297,18 +321,37 @@ import Upload from '@/components/Upload/SingleImage';
 import MDinput from '@/components/MDinput';
 import Sticky from '@/components/Sticky'; // Sticky header
 import { validURL } from '@/utils/validate';
-import { fetchComic } from '@/api/comic';
+import { fetchComic, createComic, updateComic } from '@/api/comic';
 import Resource from '@/api/resource';
+import _ from 'lodash';
 const authorResource = new Resource('authors');
 const genreResource = new Resource('genres');
+const tagResource = new Resource('tags');
 // import { userSearch } from '@/api/search';
 // import {
 //   CommentDropdown,
 //   PlatformDropdown,
 //   SourceUrlDropdown,
 // } from './Dropdown';
-
-const defaultForm = {
+const defaultPageForm = {
+  image_url: '',
+  config: '',
+  scene: '',
+  section: 0,
+};
+const defaultChapterForm = {
+  image_url: '',
+  chapter: 0,
+  token_price: 0,
+  token_price_ar: 0,
+  // release_date: (new Date()).toLocaleDateString('id-ID'),
+  favorites_count: 0,
+  views: 0,
+  pages: [
+    defaultPageForm,
+  ],
+};
+const defaultComicForm = {
   is_draft: true,
   authors: [],
   title: '',
@@ -321,6 +364,9 @@ const defaultForm = {
   platforms: ['a-platform'],
   comment_disabled: false,
   importance: 0,
+  chapters: [
+    defaultChapterForm,
+  ],
 };
 
 export default {
@@ -368,10 +414,11 @@ export default {
       }
     };
     return {
-      postForm: Object.assign({}, defaultForm),
+      postForm: Object.assign({}, defaultComicForm),
       loading: false,
       authorListOptions: [],
       genreListOptions: [],
+      tagListOptions: [],
       rules: {
         cover_url: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
@@ -379,8 +426,14 @@ export default {
         source_uri: [{ validator: validateSourceUri, trigger: 'blur' }],
       },
       tempRoute: {},
-      chapterAccordion: {},
-      pageAccordion: {},
+      chapterAccordion: {
+        0: false,
+      },
+      pageAccordion: {
+        0: {
+          0: false,
+        },
+      },
     };
   },
   computed: {
@@ -394,11 +447,12 @@ export default {
   created() {
     this.getAuthorList();
     this.getGenreList();
+    this.getTagList();
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id;
       this.fetchData(id);
     } else {
-      this.postForm = Object.assign({}, defaultForm);
+      this.postForm = Object.assign({}, defaultComicForm);
     }
 
     // Why need to make a copy of this.$route here?
@@ -406,47 +460,64 @@ export default {
     this.tempRoute = Object.assign({}, this.$route);
   },
   methods: {
+    tester(){
+      console.log(this.postForm);
+    },
     removeChapter(index){
-      console.log(index);
+      this.postForm.chapters.splice(index, 1);
     },
     addChapterAfter(index){
-      console.log(index);
-    },
-    removePage(index){
-      console.log(index);
-    },
-    addPageAfter(index){
-      console.log(index);
-    },
-    tester(){
-      console.log(typeof this.postForm.cover_url);
-    },
-    togglePageAccordion(pageId){
-      const tempAccordion = Object.assign({}, this.pageAccordion);
-      tempAccordion[pageId] = !tempAccordion[pageId];
-      this.pageAccordion = tempAccordion;
-      console.log(this.pageAccordion[pageId]);
-    },
-    toggleChapterAccordion(cptId){
+      this.postForm.chapters.splice(index + 1, 0, Object.assign({}, defaultChapterForm));
+
       const tempAccordion = Object.assign({}, this.chapterAccordion);
-      tempAccordion[cptId] = !tempAccordion[cptId];
+      tempAccordion[index + 1] = false;
       this.chapterAccordion = tempAccordion;
-      console.log(this.chapterAccordion[cptId]);
+
+      const tempPageAccordion = Object.assign({}, this.pageAccordion);
+      tempPageAccordion[index + 1] = { 0: false };
+      this.pageAccordion = tempPageAccordion;
+    },
+    removePage(index, pindex){
+      this.postForm.chapters[index].pages.splice(pindex, 1);
+    },
+    addPageAfter(index, pindex){
+      this.postForm.chapters[index].pages.splice(pindex + 1, 0, Object.assign({}, defaultPageForm));
+
+      const tempAccordion = Object.assign({}, this.pageAccordion);
+      if (!_.has(tempAccordion, index)){
+        tempAccordion[index + 1] = {};
+      }
+      tempAccordion[index][pindex + 1] = false;
+      this.pageAccordion = tempAccordion;
+    },
+    togglePageAccordion(cptIdx, pageIdx){
+      const tempAccordion = Object.assign({}, this.pageAccordion);
+      tempAccordion[cptIdx][pageIdx] = !tempAccordion[cptIdx][pageIdx];
+      this.pageAccordion = tempAccordion;
+      console.log(this.pageAccordion);
+    },
+    toggleChapterAccordion(cptIdx){
+      const tempAccordion = Object.assign({}, this.chapterAccordion);
+      tempAccordion[cptIdx] = !tempAccordion[cptIdx];
+      this.chapterAccordion = tempAccordion;
+      console.log(this.chapterAccordion);
     },
     fetchData(id) {
       fetchComic(id)
         .then(response => {
           this.postForm = response.data;
-          this.postForm.chapters.forEach((el) => {
-            this.chapterAccordion[el.id] = false;
-            el.pages.forEach((pel) => {
-              this.pageAccordion[pel.id] = false;
+          this.postForm.chapters.forEach((el, idx) => {
+            this.chapterAccordion[idx] = false;
+            this.pageAccordion[idx] = {};
+            el.pages.forEach((pel, pidx) => {
+              this.pageAccordion[idx][pidx] = false;
             });
           });
           this.postForm.authors = this.postForm.authors.map((el) => {
             return el.id;
           });
           this.postForm.genres = JSON.parse(this.postForm.genres);
+          this.postForm.tags = JSON.parse(this.postForm.tags);
           // Just for test
           // this.postForm.title += `   Article Id:${this.postForm.id}`;
           // this.postForm.content_short += `   Article Id:${this.postForm.id}`;
@@ -471,6 +542,23 @@ export default {
       this.$store.dispatch('updateVisitedView', route);
     },
     submitForm() {
+      if (this.isEdit){
+        updateComic(this.postForm, this.postForm.id)
+          .then((response) => {
+
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        createComic(this.postForm)
+          .then((response) => {
+
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
       // this.postForm.display_time = parseInt(this.display_time / 1000);
       // this.$refs.postForm.validate(valid => {
       //   if (valid) {
@@ -508,8 +596,15 @@ export default {
       });
       this.postForm.is_draft = true;
     },
+    getTagList(query) {
+      tagResource.list().then(response => {
+        if (!response.data.items) {
+          return;
+        }
+        this.tagListOptions = response.data.items;
+      });
+    },
     getGenreList(query) {
-      console.log(query);
       genreResource.list().then(response => {
         if (!response.data.items) {
           return;
@@ -518,7 +613,6 @@ export default {
       });
     },
     getAuthorList(query) {
-      console.log(query);
       authorResource.list().then(response => {
         if (!response.data.items) {
           return;

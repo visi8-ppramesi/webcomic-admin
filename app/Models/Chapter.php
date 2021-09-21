@@ -19,4 +19,12 @@ class Chapter extends Model implements ICommentable
     public function pages(){
         return $this->hasMany(Page::class);
     }
+
+    protected static function boot(){
+        parent::boot();
+        parent::deleting(function($chapter){
+            $chapter->pages->map(function($pg){$pg->delete();});
+            $chapter->comments->map(function($cmt){$cmt->delete();});
+        });
+    }
 }

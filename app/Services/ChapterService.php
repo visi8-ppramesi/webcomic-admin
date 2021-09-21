@@ -4,11 +4,12 @@ namespace App\Services;
 
 use App\Helpers\Uploader;
 use App\Models\Chapter;
+use Carbon\Carbon;
 
 class ChapterService extends Service{
     public $pages = [];
-    protected $model = Chapter::class;
-    protected $fields = [
+    public $model = Chapter::class;
+    public $fields = [
         "image_url",
         "comic_id",
         "chapter",
@@ -20,5 +21,16 @@ class ChapterService extends Service{
     public function savePreviewImage($base64File){
         $file = Uploader::saveBase64File($base64File, 'storage/media/previews/');
         $this->data['image_url'] = $file['pathname'];
+    }
+
+    public function setData($data){
+        foreach($this->fields as $field){
+            if(!empty($data[$field])){
+                if($field === 'release_date'){
+                    $data[$field] = Carbon::parse($data[$field]);
+                }
+                $this->data[$field] = $data[$field];
+            }
+        }
     }
 }

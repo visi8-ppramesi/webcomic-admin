@@ -22,14 +22,14 @@
         </div>
       </div>
     </div>
-    <div class="image-preview">
+    <!-- <div class="image-preview">
       <div v-show="imageUrl.length>1" class="image-preview-wrapper">
         <img :src="imageUrl">
         <div class="image-preview-action">
           <i class="el-icon-delete" @click="rmImage" />
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -79,7 +79,7 @@ export default {
   }
   .image-preview {
     width: 200px;
-    height: 200px;
+    // height: 200px;
     position: relative;
     border: 1px dashed #d9d9d9;
     float: left;
@@ -121,7 +121,7 @@ export default {
   }
   .image-app-preview {
     width: 320px;
-    height: 180px;
+    // height: 180px;
     position: relative;
     border: 1px dashed #d9d9d9;
     float: left;

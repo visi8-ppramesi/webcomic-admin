@@ -3,11 +3,30 @@
 namespace App\Services;
 
 class Service{
-    protected $fields, $data, $model;
-    public $record;
+    public $record, $model, $fields, $data;
 
     public function __construct(){
 
+    }
+
+    public static function checkFileType($object){
+        $objType = gettype($object);
+        if($objType != 'string'){
+            return $objType;
+        }
+        if(substr($object, 0, 5) == 'data:'){
+            return 'data_uri';
+        }else{
+            $slashes = explode('/', $object);
+            if(count($slashes) > 1){
+                return 'url';
+            }
+        }
+        return 'unknown';
+    }
+
+    public function setDatum($field, $value){
+        $this->data['field'] = $value;
     }
 
     public function setRecord($model){
@@ -36,5 +55,9 @@ class Service{
 
     public function update(){
         $this->record = tap($this->model::where('id', $this->record->id))->update($this->data)->first();
+    }
+
+    public function whereInDelete($ids){
+        $this->model::whereIn('id', $ids)->delete();
     }
 }

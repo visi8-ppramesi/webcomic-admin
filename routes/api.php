@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ComicController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\TagController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,12 @@ Route::namespace('Api')->group(function() {
         Route::post('genre', [GenreController::class, 'store']);//'GenreController@store');
         Route::patch('genre/{genre}', [GenreController::class, 'update']);//'GenreController@update');
         Route::delete('genre/{genre}', [GenreController::class, 'destroy']);//'GenreController@destroy');
+
+        Route::get('tags', [TagController::class, 'index']);//'ComicController@index');
+        Route::get('tags/{tag}', [TagController::class, 'show']);//'TagController@show');
+        Route::post('tag', [TagController::class, 'store']);//'TagController@store');
+        Route::patch('tag/{tag}', [TagController::class, 'update']);//'TagController@update');
+        Route::delete('tag/{tag}', [TagController::class, 'destroy']);//'TagController@destroy');
 
         Route::get('chapters', 'ChapterController@index');
         Route::get('chapters/{chapter}', 'ChapterController@show');

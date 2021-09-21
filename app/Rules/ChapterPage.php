@@ -5,7 +5,7 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
-class ComicChapter implements Rule
+class ChapterPage implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,11 +27,10 @@ class ComicChapter implements Rule
     public function passes($attribute, $value)
     {
         $rules = [
-            'chapter' => ['required', 'integer'],
-            'token_price' => ['required', 'integer'],
-            'token_price_ar' => ['integer', 'nullable'],
+            'section' => ['required', 'integer'],
+            'config' => ['string', 'nullable'],
+            'scene' => ['string', 'nullable'],
             'image_url' => ['required', 'is_uri_or_url'],
-            'pages' => [new ChapterPage()]
         ];
 
         foreach($value as $val){
@@ -50,6 +49,6 @@ class ComicChapter implements Rule
      */
     public function message()
     {
-        return 'Chapter object is fucked up somewhere.';
+        return 'Page object is fucked up somewhere.';
     }
 }

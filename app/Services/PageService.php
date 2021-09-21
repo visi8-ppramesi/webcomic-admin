@@ -6,8 +6,8 @@ use App\Helpers\Uploader;
 use App\Models\Page;
 
 class PageService extends Service{
-    protected $model = Page::class;
-    protected $fields = [
+    public $model = Page::class;
+    public $fields = [
         "chapter_id",
         "image_url",
         "config",
