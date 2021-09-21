@@ -7,6 +7,7 @@ use App\Models\Chapter;
 use App\Models\Comic;
 use App\Models\Page;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -128,12 +129,9 @@ class ComicService extends Service{
                 Page::whereIn('id', $pgToDelete)->delete();
             }
             DB::commit();
-        }catch(\Exception $e){
+        }catch(QueryException $e){
             DB::rollBack();
-            return [
-                'status' => 'error',
-                'error' => $e
-            ];
+            throw $e;
         }
         return [
             'status' => 'success'
@@ -183,12 +181,13 @@ class ComicService extends Service{
                 $this->chapters[] = $cptSvc;
             }
             DB::commit();
-        }catch(\Exception $e){
+        }catch(QueryException $e){
             DB::rollBack();
-            return [
-                'status' => 'error',
-                'error' => $e
-            ];
+            throw $e;
+            // return [
+            //     'status' => 'error',
+            //     'error' => $e
+            // ];
         }
         return [
             'status' => 'success'
