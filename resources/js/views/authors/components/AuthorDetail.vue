@@ -1,7 +1,7 @@
 <template>
   <div class="createPost-container">
     <el-form ref="postForm" label-position="top" :model="postForm" :rule="rules" class="form-container">
-      <sticky :class-name="'sub-navbar '+ (postForm.is_draft ? 'draft' : 'published')">
+      <sticky class-name="sub-navbar">
         <el-button
           v-loading="loading"
           style="margin-left: 10px;"
@@ -18,7 +18,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
+              <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
                 Author's Name
               </MDinput>
             </el-form-item>
@@ -26,14 +26,26 @@
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="8">
-                  <el-form-item label-width="80px" label="Author's Email :" class="postInfo-container-item">
+                  <el-form-item label-width="80px" label="Email :" class="postInfo-container-item">
                     <el-input
                       v-model="postForm.email"
                       :rows="1"
                       type="input"
                       class="author-input"
                       autosize
-                      placeholder="Enter Author's Email"
+                      placeholder="Enter Email"
+                    />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="User ID :" class="postInfo-container-item">
+                    <el-input
+                      v-model="postForm.user_id"
+                      :rows="1"
+                      type="input"
+                      class="author-input"
+                      autosize
+                      placeholder="Enter User ID"
                     />
                   </el-form-item>
                 </el-col>
@@ -41,7 +53,7 @@
             </div>
           </el-col>
         </el-row>
-        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Author's Description:">
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Description:">
           <el-input
             v-model="postForm.description"
             :rows="1"
@@ -52,7 +64,7 @@
           />
         </el-form-item>
         <div class="text item">
-          <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Author's Social Media Links :">
+          <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Social Media Links :">
             <el-row>
               <el-button style="float:right; margin-top: 5px;" type="primary" icon="el-icon-circle-plus-outline" @click="addNewSocialMedia">Add Social Media</el-button>
               <div style="margin-top: 70px;">
@@ -79,8 +91,8 @@
             </el-row>
           </el-form-item>
         </div>
-        <el-form-item prop="cover_url" style="margin-bottom: 30px;" label-width="80px" label="Cover Image:">
-          <Upload v-model="postForm.cover_url" />
+        <el-form-item prop="profile_picture_url" style="margin-bottom: 30px;" label-width="80px" label="Profile Photo:">
+          <Upload v-model="postForm.profile_picture_url" />
         </el-form-item>
       </div>
     </el-form>
@@ -92,18 +104,19 @@ import Upload from '@/components/Upload/SingleImage';
 import MDinput from '@/components/MDinput';
 import Sticky from '@/components/Sticky'; // Sticky header
 import { validURL } from '@/utils/validate';
-import { fetchComic } from '@/api/comic';
+// import { fetchComic } from '@/api/comic';
 import Resource from '@/api/resource';
 const authorResource = new Resource('authors');
 
 const defaultForm = {
+  user_id: null,
   is_draft: true,
   authors: [],
   title: '',
   content: '',
   content_short: '',
   source_uri: '',
-  cover_url: '',
+  profile_picture_url: '',
   display_time: undefined,
   id: undefined,
   platforms: ['a-platform'],
@@ -161,7 +174,7 @@ export default {
         link: '',
       }],
       rules: {
-        cover_url: [{ validator: validateRequire }],
+        profile_picture_url: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
         content: [{ validator: validateRequire }],
         source_uri: [{ validator: validateSourceUri, trigger: 'blur' }],
@@ -231,25 +244,34 @@ export default {
       console.log(this.chapterAccordion[cptId]);
     },
     fetchData(id) {
-      fetchComic(id)
+      authorResource.get(id)
         .then(response => {
           this.postForm = response.data;
-          this.postForm.chapters.forEach((el) => {
-            this.chapterAccordion[el.id] = false;
-            el.pages.forEach((pel) => {
-              this.pageAccordion[pel.id] = false;
+          const parsedSocMed = JSON.parse(this.postForm.social_media_links);
+          const tempSocmed = Object.keys(parsedSocMed)
+            .map((el) => {
+              return {
+                name: el,
+                link: parsedSocMed[el],
+              };
             });
-          });
-          this.postForm.authors = this.postForm.authors.map((el) => {
-            return el.id;
-          });
-          this.postForm.genres = JSON.parse(this.postForm.genres);
-          // Just for test
-          // this.postForm.title += `   Article Id:${this.postForm.id}`;
-          // this.postForm.content_short += `   Article Id:${this.postForm.id}`;
+          this.social_media = tempSocmed.length > 0 ? tempSocmed : this.social_media;
+          // this.postForm.chapters.forEach((el) => {
+          //   this.chapterAccordion[el.id] = false;
+          //   el.pages.forEach((pel) => {
+          //     this.pageAccordion[pel.id] = false;
+          //   });
+          // });
+          // this.postForm.authors = this.postForm.authors.map((el) => {
+          //   return el.id;
+          // });
+          // this.postForm.genres = JSON.parse(this.postForm.genres);
+          // // Just for test
+          // // this.postForm.title += `   Article Id:${this.postForm.id}`;
+          // // this.postForm.content_short += `   Article Id:${this.postForm.id}`;
 
-          // Set tagsview title
-          this.setTagsViewTitle();
+          // // Set tagsview title
+          // this.setTagsViewTitle();
         })
         .catch(err => {
           console.log(err);
@@ -268,6 +290,25 @@ export default {
       this.$store.dispatch('updateVisitedView', route);
     },
     submitForm() {
+      console.log(this.social_media);
+      this.postForm.social_media_links = JSON.stringify(this.social_media.reduce((obj, item) => Object.assign(obj, { [item.name]: item.link }), {}));
+      if (this.isEdit){
+        authorResource.update(this.postForm.id, this.postForm)
+          .then((response) => {
+            this.$router.push('/author');
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        authorResource.store(this.postForm)
+          .then((response) => {
+            this.$router.push('/author');
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
       // this.postForm.display_time = parseInt(this.display_time / 1000);
       // this.$refs.postForm.validate(valid => {
       //   if (valid) {

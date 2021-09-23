@@ -24,7 +24,7 @@
 
       <el-table-column min-width="180px" label="Title">
         <template slot-scope="{row}">
-          <router-link :to="'/comics/edit/'+row.id" class="link-type">
+          <router-link :to="'/comic/edit/'+row.id" class="link-type">
             <span>{{ row.title }}</span>
           </router-link>
         </template>
@@ -54,13 +54,16 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="Actions" width="120">
+      <el-table-column align="center" label="Actions" width="200">
         <template slot-scope="scope">
-          <router-link :to="'/comics/edit/'+scope.row.id">
+          <router-link :to="'/comic/edit/'+scope.row.id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               Edit
             </el-button>
           </router-link>
+          <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteItem(scope.row.id)">
+            Delete
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -110,6 +113,12 @@ export default {
     this.getList();
   },
   methods: {
+    deleteItem(id){
+      comicResource.destroy(id)
+        .then((response) => {
+          this.getList();
+        });
+    },
     async getList() {
       this.listLoading = true;
       const { data } = await comicResource.list(this.listQuery);
@@ -129,7 +138,7 @@ export default {
       this.getList();
     },
     handleCreate(){
-      this.$router.push('/comics/create');
+      this.$router.push('/comic/create');
     },
   },
 };

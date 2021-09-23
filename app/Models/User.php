@@ -6,6 +6,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use tizis\laraComments\Traits\Commenter;
 
 /**
  * Class User
@@ -20,7 +21,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
-    use Notifiable, HasRoles, HasApiTokens;
+    use Notifiable, HasRoles, HasApiTokens, Commenter;
 
     /**
      * The attributes that are mass assignable.
@@ -54,6 +55,10 @@ class User extends Authenticatable
      * @var string
      */
     protected $guard_name = 'api';
+
+    public function asAuthor(){
+        return $this->hasOne(Author::class);
+    }
 
     /**
      * @inheritdoc
@@ -98,5 +103,14 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    protected static function boot(){
+        parent::boot();
+        parent::deleting(function($user){
+            $user->asAuthor()->delete();
+            $user->comments->map(function($cmt){$cmt->delete();});
+            $user->commentsVotes->map(function($cmt){$cmt->delete();});
+        });
     }
 }

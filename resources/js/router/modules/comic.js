@@ -2,13 +2,12 @@
 import Layout from '@/layout';
 
 const comicRoutes = {
-  path: '/comics',
+  path: '/comic',
   component: Layout,
-  redirect: 'noredirect',
-  name: 'Comics',
+  redirect: '/comic/list',
   meta: {
-    title: 'comics',
-    icon: 'comic',
+    title: 'Comics',
+    icon: 'book',
     permissions: ['view menu comics'],
   },
   children: [
@@ -22,14 +21,13 @@ const comicRoutes = {
       path: 'create',
       component: () => import('@/views/comics/Create'),
       name: 'CreateComic',
-      meta: { title: 'createComic', icon: 'edit', permissions: ['manage article'] },
-      hidden: true,
+      meta: { title: 'Create Comic' },
     },
     {
       path: 'edit/:id(\\d+)',
       component: () => import('@/views/comics/Edit'),
       name: 'EditComic',
-      meta: { title: 'editComic', noCache: true, permissions: ['manage article'] },
+      meta: { title: 'Edit Comic', noCache: true },
       hidden: true,
     },
   ],

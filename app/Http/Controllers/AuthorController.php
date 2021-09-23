@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Laravue\JsonResponse;
 use App\Models\Author;
+use App\Rules\SocialMediaObject;
+use App\Services\AuthorService;
 use Illuminate\Http\Request;
 
 class AuthorController extends Controller
@@ -41,19 +43,24 @@ class AuthorController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, AuthorService $authorService)
     {
         $validated = $request->validate([
             'name' => ['string', 'required', 'max:140'],
             'description' => ['string', 'required'],
-            'social_media_links' => ['json', 'nullable'],
-            'email' => ['string', 'required', 'max:140'],
-            'profile_picture_url' => ['image', 'required'],
+            'social_media_links' => [new SocialMediaObject(), 'nullable'],
+            'email' => ['email', 'required', 'max:140'],
+            'profile_picture_url' => ['is_uri_or_url', 'required'],
+            'user_id' => ['integer', 'required']
         ]);
+        $authorService->setData($request->all());
+        $retval = $authorService->create();
+        return response()->json($retval, 200);
+        // return response()->json($validated, 200);
 
-        $validated['profile_picture_url'] = $this->storeFileFromRequest($request, 'profile_picture_url', 'public/media/authors');
+        // $validated['profile_picture_url'] = $this->storeFileFromRequest($request, 'profile_picture_url', 'public/media/authors');
 
-        return response()->json(Author::create($validated), 200);
+        // return response()->json(Author::create($validated), 200);
     }
 
     /**
@@ -64,7 +71,7 @@ class AuthorController extends Controller
      */
     public function show(Author $author)
     {
-        //
+        return response()->json(new JsonResponse($author));
     }
 
     /**
@@ -85,21 +92,25 @@ class AuthorController extends Controller
      * @param  \App\Author  $author
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Author $author)
+    public function update(Request $request, Author $author, AuthorService $authorService)
     {
         $validated = $request->validate([
             'name' => ['string', 'required', 'max:140'],
             'description' => ['string', 'required'],
-            'social_media_links' => ['json', 'nullable'],
-            'email' => ['string', 'required', 'max:140'],
-            'profile_picture_url' => ['image', 'nullable'],
+            'social_media_links' => [new SocialMediaObject(), 'nullable'],
+            'email' => ['email', 'required', 'max:140'],
+            'profile_picture_url' => ['is_uri_or_url', 'nullable'],
+            'user_id' => ['integer', 'required']
         ]);
+        $authorService->setData($request->all());
+        $retval = $authorService->update();
+        return response()->json($retval, 200);
 
-        if(!empty($validated['profile_picture_url'])){
-            $validated['profile_picture_url'] = $this->storeFileFromRequest($request, 'profile_picture_url', 'public/media/authors');
-        }
+        // if(!empty($validated['profile_picture_url'])){
+        //     $validated['profile_picture_url'] = $this->storeFileFromRequest($request, 'profile_picture_url', 'public/media/authors');
+        // }
 
-        return response()->json($author->update($validated), 200);
+        // return response()->json($author->update($validated), 200);
     }
 
     /**

@@ -56,6 +56,7 @@ class Comic extends Model implements ICommentable
         parent::deleting(function($comic){
             $comic->chapters->map(function($cpt){$cpt->delete();});
             $comic->comments->map(function($cmt){$cmt->delete();});
+            $comic->authors()->detach();
         });
     }
 }

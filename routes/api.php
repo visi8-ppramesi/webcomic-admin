@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ComicController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\TokenTransactionController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +48,12 @@ Route::namespace('Api')->group(function() {
         Route::put('users/{user}/permissions', 'UserController@updatePermissions')->middleware('permission:' .Acl::PERMISSION_PERMISSION_MANAGE);
         Route::get('roles/{role}/permissions', 'RoleController@permissions')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
 
+        Route::get('users', [UserController::class, 'index']);//'UserController@index');
+        Route::get('users/{user}', [UserController::class, 'show']);//'UserController@show');
+        Route::post('user', [UserController::class, 'store']);//'UserController@store');
+        Route::patch('user/{user}', [UserController::class, 'update']);//'UserController@update');
+        Route::delete('user/{user}', [UserController::class, 'destroy']);//'UserController@destroy');
+
         Route::get('comics', [ComicController::class, 'index']);//'ComicController@index');
         Route::get('comics/{comic}', [ComicController::class, 'show']);//'ComicController@show');
         Route::post('comic', [ComicController::class, 'store']);//'ComicController@store');
@@ -68,23 +78,23 @@ Route::namespace('Api')->group(function() {
         Route::patch('tag/{tag}', [TagController::class, 'update']);//'TagController@update');
         Route::delete('tag/{tag}', [TagController::class, 'destroy']);//'TagController@destroy');
 
-        Route::get('chapters', 'ChapterController@index');
-        Route::get('chapters/{chapter}', 'ChapterController@show');
-        Route::post('chapter', 'ChapterController@store');
-        Route::patch('chapter/{chapter}', 'ChapterController@update');
-        Route::delete('chapter/{chapter}', 'ChapterController@destroy');
+        Route::get('chapters', [ChapterController::class, 'index']);//'ComicController@index');
+        Route::get('chapters/{chapter}', [ChapterController::class, 'show']);//'ChapterController@show');
+        Route::post('chapter', [ChapterController::class, 'store']);//'ChapterController@store');
+        Route::patch('chapter/{chapter}', [ChapterController::class, 'update']);//'ChapterController@update');
+        Route::delete('chapter/{chapter}', [ChapterController::class, 'destroy']);//'ChapterController@destroy');
 
-        Route::get('pages', 'PageController@index');
-        Route::get('pages/{page}', 'PageController@show');
-        Route::post('page', 'PageController@store');
-        Route::patch('page/{page}', 'PageController@update');
-        Route::delete('page/{page}', 'PageController@destroy');
+        Route::get('pages', [PageController::class, 'index']);
+        Route::get('pages/{page}', [PageController::class, 'show']);
+        Route::post('page', [PageController::class, 'store']);
+        Route::patch('page/{page}', [PageController::class, 'update']);
+        Route::delete('page/{page}', [PageController::class, 'destroy']);
 
-        Route::get('tokens', 'TokenTransactionController@index');
-        Route::get('tokens/{token}', 'TokenTransactionController@show');
-        Route::post('token', 'TokenTransactionController@store');
-        Route::patch('token/{token}', 'TokenTransactionController@update');
-        Route::delete('token/{token}', 'TokenTransactionController@destroy');
+        Route::get('tokens', [TokenTransactionController::class, 'index']);
+        Route::get('tokens/{token}', [TokenTransactionController::class, 'show']);
+        Route::post('token', [TokenTransactionController::class, 'store']);
+        Route::patch('token/{token}', [TokenTransactionController::class, 'update']);
+        Route::delete('token/{token}', [TokenTransactionController::class, 'destroy']);
     });
 });
 

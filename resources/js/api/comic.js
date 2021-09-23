@@ -31,7 +31,7 @@ export function createComic(data) {
   });
 }
 
-export function updateComic(data, id) {
+export function updateComic(id, data) {
   return request({
     url: '/comic/' + id,
     method: 'patch',

@@ -1,4 +1,5 @@
 import request from '@/utils/request';
+import pluralize from 'pluralize';
 
 /**
  * Simple RESTful resource class
@@ -6,6 +7,7 @@ import request from '@/utils/request';
 class Resource {
   constructor(uri) {
     this.uri = uri;
+    this.singularUri = pluralize.singular(uri);
   }
   list(query) {
     return request({
@@ -22,21 +24,21 @@ class Resource {
   }
   store(resource) {
     return request({
-      url: '/' + this.uri,
+      url: '/' + this.singularUri,
       method: 'post',
       data: resource,
     });
   }
   update(id, resource) {
     return request({
-      url: '/' + this.uri + '/' + id,
-      method: 'put',
+      url: '/' + this.singularUri + '/' + id,
+      method: 'patch',
       data: resource,
     });
   }
   destroy(id) {
     return request({
-      url: '/' + this.uri + '/' + id,
+      url: '/' + this.singularUri + '/' + id,
       method: 'delete',
     });
   }

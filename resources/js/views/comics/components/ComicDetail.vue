@@ -543,7 +543,7 @@ export default {
     },
     submitForm() {
       if (this.isEdit){
-        updateComic(this.postForm, this.postForm.id)
+        updateComic(this.postForm.id, this.postForm)
           .then((response) => {
 
           })

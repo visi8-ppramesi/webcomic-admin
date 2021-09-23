@@ -16,4 +16,11 @@ class Author extends Model
     public function user(){
         return $this->belongsTo(User::class);
     }
+
+    protected static function boot(){
+        parent::boot();
+        parent::deleting(function($author){
+            $author->comics()->detach();
+        });
+    }
 }

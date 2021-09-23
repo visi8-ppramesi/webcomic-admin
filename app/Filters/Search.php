@@ -13,6 +13,9 @@ class Search extends Filter{
         "App\Models\Author" => [
             'name'
         ],
+        "App\Models\User" => [
+            'name', 'email'
+        ]
     ];
     protected function applyFilter($builder){
         $modelName = get_class($builder->getModel());

@@ -43,17 +43,19 @@
 
       <el-table-column align="center" label="Actions" width="350">
         <template slot-scope="scope">
-          <router-link v-if="!scope.row.roles.includes('admin')" :to="'/administrator/users/edit/'+scope.row.id">
-            <el-button v-permission="['manage user']" type="primary" size="small" icon="el-icon-edit">
-              Edit
+          <template v-if="$store.getters.userId != scope.row.id">
+            <router-link v-if="!scope.row.roles.includes('admin')" :to="'/administrator/users/edit/'+scope.row.id">
+              <el-button v-permission="['manage user']" type="primary" size="small" icon="el-icon-edit">
+                Edit
+              </el-button>
+            </router-link>
+            <el-button v-if="!scope.row.roles.includes('admin')" v-permission="['manage permission']" type="warning" size="small" icon="el-icon-edit" @click="handleEditPermissions(scope.row.id);">
+              Permissions
             </el-button>
-          </router-link>
-          <el-button v-if="!scope.row.roles.includes('admin')" v-permission="['manage permission']" type="warning" size="small" icon="el-icon-edit" @click="handleEditPermissions(scope.row.id);">
-            Permissions
-          </el-button>
-          <el-button v-if="scope.row.roles.includes('visitor')" v-permission="['manage user']" type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row.id, scope.row.name);">
-            Delete
-          </el-button>
+            <el-button v-permission="['manage user']" type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row.id, scope.row.name);">
+              Delete
+            </el-button>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -255,6 +257,7 @@ export default {
     },
   },
   created() {
+    console.log(this.$store.getters.userId);
     this.resetNewUser();
     this.getList();
     if (checkPermission(['manage permission'])) {
