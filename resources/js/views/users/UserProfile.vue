@@ -35,6 +35,7 @@ export default {
         limit: 20,
         paginate: 20,
         sort_by_desc: 'created_at',
+        with: 'transactionable.comic',
       },
     };
   },
