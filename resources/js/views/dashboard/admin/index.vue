@@ -1,11 +1,27 @@
 <template>
   <div class="dashboard-editor-container">
-    <github-corner style="position: absolute; top: 0px; border: 0; right: 0;" />
+    <el-date-picker
+      v-model="startDate"
+      type="date"
+      placeholder="Pick start date"
+      format="yyyy/MM/dd"
+      @change="fetchTransactions"
+    />
+    <!-- </el-date-picker> -->
+    <el-date-picker
+      v-model="endDate"
+      type="date"
+      placeholder="Pick end date"
+      format="yyyy/MM/dd"
+      @change="fetchTransactions"
+    />
+    <!-- </el-date-picker> -->
+    <!-- <github-corner style="position: absolute; top: 0px; border: 0; right: 0;" /> -->
 
-    <panel-group @handleSetLineChartData="handleSetLineChartData" />
+    <!-- <panel-group @handleSetLineChartData="handleSetLineChartData" /> -->
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <line-chart :chart-data="lineChartData" />
+      <line-chart :chart-data="lineChartData" :dates="dates" />
     </el-row>
 
     <el-row :gutter="32">
@@ -41,8 +57,8 @@
 </template>
 
 <script>
-import GithubCorner from '@/components/GithubCorner';
-import PanelGroup from './components/PanelGroup';
+// import GithubCorner from '@/components/GithubCorner';
+// import PanelGroup from './components/PanelGroup';
 import LineChart from './components/LineChart';
 import RaddarChart from './components/RaddarChart';
 import PieChart from './components/PieChart';
@@ -50,11 +66,13 @@ import BarChart from './components/BarChart';
 import TransactionTable from './components/TransactionTable';
 import TodoList from './components/TodoList';
 import BoxCard from './components/BoxCard';
+import { fetchDailyTransactions } from '../../../api/data';
+import dayjs from 'dayjs';
 
 const lineChartData = {
   newVisitis: {
-    expectedData: [100, 120, 161, 134, 105, 160, 165],
-    actualData: [120, 82, 91, 154, 162, 140, 145],
+    comic_bucket: [100, 120, 161, 134, 105, 160, 165],
+    token_bucket: [120, 82, 91, 154, 162, 140, 145],
   },
   messages: {
     expectedData: [200, 192, 120, 144, 160, 130, 140],
@@ -73,8 +91,8 @@ const lineChartData = {
 export default {
   name: 'DashboardAdmin',
   components: {
-    GithubCorner,
-    PanelGroup,
+    // GithubCorner,
+    // PanelGroup,
     LineChart,
     RaddarChart,
     PieChart,
@@ -86,9 +104,26 @@ export default {
   data() {
     return {
       lineChartData: lineChartData.newVisitis,
+      endDate: dayjs().format('YYYY-MM-DD'),
+      startDate: dayjs().add(-7, 'day').format('YYYY-MM-DD'),
+      dates: [],
     };
   },
+  created(){
+    this.fetchTransactions();
+  },
   methods: {
+    fetchTransactions(){
+      const startDate = dayjs(this.startDate).format('YYYY-MM-DD');
+      const endDate = dayjs(this.endDate).format('YYYY-MM-DD');
+      fetchDailyTransactions(startDate, endDate)
+        .then((response) => {
+          const { comic_bucket, token_bucket, dates } = response;
+          this.lineChartData.comic_bucket = comic_bucket;
+          this.lineChartData.token_bucket = token_bucket;
+          this.dates = dates;
+        });
+    },
     handleSetLineChartData(type) {
       this.lineChartData = lineChartData[type];
     },

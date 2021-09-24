@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ComicController;
+use App\Http\Controllers\DataController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TagController;
@@ -95,6 +96,11 @@ Route::namespace('Api')->group(function() {
         Route::post('token', [TokenTransactionController::class, 'store']);
         Route::patch('token/{token}', [TokenTransactionController::class, 'update']);
         Route::delete('token/{token}', [TokenTransactionController::class, 'destroy']);
+
+        Route::get('data/transactions/daily/{startDate?}/{endDate?}', [DataController::class, 'getDailyTransactionData']);
+        Route::get('data/transactions/user/{userId}/{startDate?}/{endDate?}', [DataController::class, 'getUserTransactionData']);
+        Route::get('data/transactions/comic/{comicId}/{startDate?}/{endDate?}', [DataController::class, 'getComicTransactionData']);
+        Route::get('data/transactions/chapter/{chapterId}/{startDate?}/{endDate?}', [DataController::class, 'getChapterTransactionData']);
     });
 });
 

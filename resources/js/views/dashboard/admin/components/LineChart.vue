@@ -9,6 +9,10 @@ import { debounce } from '@/utils';
 
 export default {
   props: {
+    dates: {
+      type: Array,
+      default: () => [],
+    },
     className: {
       type: String,
       default: 'chart',
@@ -78,10 +82,16 @@ export default {
         this.__resizeHandler();
       }
     },
-    setOptions({ expectedData, actualData } = {}) {
+    setOptions({ comic_bucket, token_bucket } = {}) {
+      const dayDay = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const today = (new Date()).getDay();
+      const k = [];
+      for (let x = 0; x < this.dates.length; x++){
+        k.push(dayDay[(today + x - 1) % 7]);
+      }
       this.chart.setOption({
         xAxis: {
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: k,
           boundaryGap: false,
           axisTick: {
             show: false,
@@ -111,7 +121,7 @@ export default {
         },
         series: [
           {
-            name: 'expected',
+            name: 'Comic Transactions',
             itemStyle: {
               normal: {
                 color: '#FF005A',
@@ -123,12 +133,12 @@ export default {
             },
             smooth: true,
             type: 'line',
-            data: expectedData,
+            data: comic_bucket,
             animationDuration: 2800,
             animationEasing: 'cubicInOut',
           },
           {
-            name: 'actual',
+            name: 'Token Transactions',
             smooth: true,
             type: 'line',
             itemStyle: {
@@ -143,7 +153,7 @@ export default {
                 },
               },
             },
-            data: actualData,
+            data: token_bucket,
             animationDuration: 2800,
             animationEasing: 'quadraticOut',
           },

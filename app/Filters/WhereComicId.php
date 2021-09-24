@@ -2,9 +2,9 @@
 
 namespace App\Filters;
 
-class WhereInId extends Filter{
+class WhereComicId extends Filter{
     public $noParam = false;
     protected function applyFilter($builder){
-        return $builder->whereIn('id', $this->getRequestFilterValue());
+        return $builder->where('comic_id', $this->getRequestFilterValue());
     }
 }

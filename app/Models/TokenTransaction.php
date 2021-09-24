@@ -11,9 +11,11 @@ use App\Filters\TransactionsWhereChapter;
 use App\Filters\TransactionsWhereType;
 use App\Filters\WhereCreatedAfter;
 use App\Filters\WhereCreatedBefore;
+use App\Filters\WhereTransactionableId;
 use App\Filters\WhereUserId;
 use App\Filters\With;
 use App\Traits\Pipeable;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class TokenTransaction extends Model
@@ -26,6 +28,7 @@ class TokenTransaction extends Model
             Get::class,
             TransactionsWhereChapter::class,
             TransactionsWhereType::class,
+            WhereTransactionableId::class,
             WhereCreatedAfter::class,
             WhereCreatedBefore::class,
             WhereUserId::class,
@@ -43,5 +46,10 @@ class TokenTransaction extends Model
 
     public function user(){
         return $this->belongsTo(User::class);
+    }
+
+    public function getBucketDateAttribute()
+    {
+        return Carbon::parse($this->created_at)->format('d-m-y');
     }
 }
