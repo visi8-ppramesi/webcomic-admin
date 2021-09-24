@@ -100,6 +100,7 @@ class UserController extends BaseController
      */
     public function show(User $user)
     {
+        // $user->load('tokenTransactions.transactionable');
         return new UserResource($user);
     }
 

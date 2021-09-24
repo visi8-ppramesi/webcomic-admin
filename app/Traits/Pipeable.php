@@ -1,6 +1,7 @@
 <?php
 namespace App\Traits;
 
+use App\Filters\Count;
 use App\Filters\Get;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Str;
@@ -12,6 +13,13 @@ trait Pipeable{
 
     public function pipeable(){
         return $this->pipeableThrough;
+    }
+
+    public static function pipeCount(){
+        $pipe = (new static)->pipeable();
+        $pipe[0] = Count::class;
+
+        return self::buildPipeline($pipe, self::query());
     }
 
     public static function pipe($pipeableObject = null, $queryParams = []){
@@ -27,9 +35,14 @@ trait Pipeable{
         }
 
         $self = new static;
+        return self::buildPipeline($self->pipeable(), $pipeableObject);
+    }
+
+    private static function buildPipeline($pipe, $pipedObject){
         return app(Pipeline::class)
-            ->send($pipeableObject)
-            ->through($self->pipeable())
+            ->send($pipedObject)
+            ->through($pipe)
             ->thenReturn();
     }
+
 }

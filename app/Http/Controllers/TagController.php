@@ -15,7 +15,14 @@ class TagController extends Controller
      */
     public function index()
     {
-        return response()->json(new JsonResponse(['items' => Tag::all()]), 200);
+        $comic = Tag::pipe();
+        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
+            $comic = $comic->getCollection();
+        }
+        return response()->json(new JsonResponse([
+            'items' => $comic,
+            'total' => Tag::pipeCount()
+        ]));
     }
 
     /**
@@ -36,7 +43,11 @@ class TagController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['string', 'required']
+        ]);
+
+        return response()->json(Tag::create($validated), 200);
     }
 
     /**
@@ -47,7 +58,7 @@ class TagController extends Controller
      */
     public function show(Tag $tag)
     {
-        //
+        return response()->json(new JsonResponse($tag));
     }
 
     /**
@@ -70,7 +81,11 @@ class TagController extends Controller
      */
     public function update(Request $request, Tag $tag)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['string', 'required']
+        ]);
+
+        return response()->json($tag->update($validated));
     }
 
     /**
@@ -81,6 +96,6 @@ class TagController extends Controller
      */
     public function destroy(Tag $tag)
     {
-        //
+        return response()->json($tag->delete());
     }
 }

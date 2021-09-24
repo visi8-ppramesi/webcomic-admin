@@ -23,7 +23,7 @@ class AuthorController extends Controller
         }
         return response()->json(new JsonResponse([
             'items' => $author,
-            'total' => Author::count()
+            'total' => Author::pipeCount()
         ]));
     }
 

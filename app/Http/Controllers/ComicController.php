@@ -24,7 +24,7 @@ class ComicController extends Controller
         }
         return response()->json(new JsonResponse([
             'items' => $comic,
-            'total' => Comic::count()
+            'total' => Comic::pipeCount()
         ]));
     }
 

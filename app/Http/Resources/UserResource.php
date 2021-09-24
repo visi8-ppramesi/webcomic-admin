@@ -30,7 +30,13 @@ class UserResource extends JsonResource
                 },
                 $this->getAllPermissions()->toArray()
             ),
-            'avatar' => 'https://i.pravatar.cc',
+            'avatar' => $this->profile_photo_url,
+            // 'token_transactions' => $this->tokenTransactions,
+            'total_tokens' => $this->total_tokens,
+            'subscriptions' => json_decode($this->subscriptions),
+            'favorites' => json_decode($this->favorites),
+            'bookmark' => json_decode($this->bookmark),
+            'purchase_history' => json_decode($this->purchase_history)
         ];
     }
 }

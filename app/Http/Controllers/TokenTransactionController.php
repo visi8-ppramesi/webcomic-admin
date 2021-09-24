@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\TokenTransaction;
+use App\Laravue\JsonResponse;
+use App\Models\TokenTransaction;
 use Illuminate\Http\Request;
 
 class TokenTransactionController extends Controller
@@ -14,7 +15,14 @@ class TokenTransactionController extends Controller
      */
     public function index()
     {
-        return response()->json(TokenTransaction::pipe(), 200);
+        $comic = TokenTransaction::pipe();
+        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
+            $comic = $comic->getCollection();
+        }
+        return response()->json(new JsonResponse([
+            'items' => $comic,
+            'total' => TokenTransaction::pipeCount()
+        ]));
     }
 
     /**

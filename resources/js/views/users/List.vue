@@ -25,7 +25,9 @@
 
       <el-table-column align="center" label="Name">
         <template slot-scope="scope">
-          <span>{{ scope.row.name }}</span>
+          <router-link :to="'/users/edit/' + scope.row.id" class="link-type">
+            <span>{{ scope.row.name }}</span>
+          </router-link>
         </template>
       </el-table-column>
 
