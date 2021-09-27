@@ -46,7 +46,7 @@
       <el-table-column align="center" label="Actions" width="350">
         <template slot-scope="scope">
           <template v-if="$store.getters.userId != scope.row.id">
-            <router-link v-if="!scope.row.roles.includes('admin')" :to="'/administrator/users/edit/'+scope.row.id">
+            <router-link v-if="!scope.row.roles.includes('admin')" :to="'/users/edit/'+scope.row.id">
               <el-button v-permission="['manage user']" type="primary" size="small" icon="el-icon-edit">
                 Edit
               </el-button>

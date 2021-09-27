@@ -1,151 +1,29 @@
 <template>
   <el-card v-if="user.name">
     <el-tabs v-model="activeActivity" @tab-click="handleClick">
-      <el-tab-pane label="Activity" name="first">
+      <el-tab-pane label="Comic Purchases" name="first">
         <div class="user-activity">
-          <div class="post">
+          <div v-for="(innerTransaction, idx) in comicTransactions" :key="idx" class="post">
             <div class="user-block">
-              <img
-                class="img-circle"
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDkaQO69Fro8SZLTVZQ75JH2R0T-sn5yIA_lKGwvvgQ0R0BoQtUQ"
-                alt="user image"
-              >
-              <span class="username text-muted">
-                <a href="#">Iron Man</a>
-                <a href="#" class="pull-right btn-box-tool">
-                  <i class="fa fa-times" />
-                </a>
-              </span>
-              <span class="description">Shared publicly - 7:30 PM today</span>
+              <div>Comic Title: {{ innerTransaction.transactionable ? innerTransaction.transactionable.comic.title : '' }}</div>
+              <div>Chapter: {{ innerTransaction.transactionable ? innerTransaction.transactionable.chapter : '' }}</div>
+              <div>Token: {{ innerTransaction.token_amount }}</div>
+              <div>Date: {{ innerTransaction.created_at | dateFormatter }}</div>
             </div>
-            <p>
-              Lorem ipsum represents a long-held tradition for designers,
-              typographers and the like. Some people hate it and argue for
-              its demise, but others ignore the hate as they create awesome
-              tools to help create filler text for everyone from bacon lovers
-              to Charlie Sheen fans.
-            </p>
-            <ul class="list-inline">
-              <li>
-                <a href="#" class="link-black text-sm">
-                  <i class="el-icon-share" /> Share
-                </a>
-              </li>
-              <li>
-                <a href="#" class="link-black text-sm">
-                  <svg-icon icon-class="like" />Like
-                </a>
-              </li>
-              <li class="pull-right">
-                <a href="#" class="link-black text-sm">
-                  <svg-icon icon-class="comment" />Comments
-                  (5)
-                </a>
-              </li>
-            </ul>
-            <el-input placeholder="Type a comment" />
           </div>
-          <div class="post">
-            <div class="user-block">
-              <img
-                class="img-circle"
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMMN-8f9CQQ3MKJpboBJIqaiJ2Wus2Tf4w_vx9STtalxrY3qGJ"
-                alt="user image"
-              >
-              <span class="username text-muted">
-                <a href="#">Captain American</a>
-                <a href="#" class="pull-right btn-box-tool">
-                  <i class="fa fa-times" />
-                </a>
-              </span>
-              <span class="description">Sent you a message - yesterday</span>
-            </div>
-            <p>
-              Lorem ipsum represents a long-held tradition for designers,
-              typographers and the like. Some people hate it and argue for
-              its demise, but others ignore the hate as they create awesome
-              tools to help create filler text for everyone from bacon lovers
-              to Charlie Sheen fans.
-            </p>
-            <el-input placeholder="Response">
-              <el-button slot="append">
-                Send
-              </el-button>
-            </el-input>
-          </div>
-          <div class="post">
-            <div class="user-block">
-              <img
-                class="img-circle img-bordered-sm"
-                src="https://cdn3.iconfinder.com/data/icons/movies-3/32/daredevil-superhero-marvel-comics-mutant-avatar-512.png"
-                alt="User Image"
-              >
-              <span class="username">
-                <a href="#">Daredevil</a>
-                <a href="#" class="pull-right btn-box-tool">
-                  <i class="fa fa-times" />
-                </a>
-              </span>
-              <span class="description">Posted 4 photos - 2 days ago</span>
-            </div>
-            <div class="user-images">
-              <el-carousel :interval="6000" type="card" height="200px">
-                <el-carousel-item v-for="item in carouselImages" :key="item">
-                  <img :src="item" class="image">
-                </el-carousel-item>
-              </el-carousel>
-            </div>
-            <ul class="list-inline">
-              <li>
-                <a href="#" class="link-black text-sm">
-                  <i class="el-icon-share" /> Share
-                </a>
-              </li>
-              <li>
-                <a href="#" class="link-black text-sm">
-                  <svg-icon icon-class="like" />Like
-                </a>
-              </li>
-              <li class="pull-right">
-                <a href="#" class="link-black text-sm">
-                  <svg-icon icon-class="comment" />Comments
-                  (5)
-                </a>
-              </li>
-            </ul>
-            <el-input placeholder="Type a comment" />
-          </div>
+          <button :disabled="!comicLoadMoreEnabled" @click="nextComicPage">Load More</button>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Timeline" name="second">
-        <div class="block">
-          <el-timeline>
-            <el-timeline-item timestamp="2019/4/17" placement="top">
-              <el-card>
-                <h4>Update Github template</h4>
-                <p>tuandm committed 2019/4/17 20:46</p>
-              </el-card>
-            </el-timeline-item>
-            <el-timeline-item timestamp="2019/4/18" placement="top">
-              <el-card>
-                <h4>Update Github template</h4>
-                <p>tonynguyen committed 2019/4/18 20:46</p>
-              </el-card>
-              <el-card>
-                <h4>Update Github template</h4>
-                <p>tuandm committed 2019/4/19 21:16</p>
-              </el-card>
-            </el-timeline-item>
-            <el-timeline-item timestamp="2019/4/19" placement="top">
-              <el-card>
-                <h4>
-                  Deploy
-                  <a href="https://laravue.dev" target="_blank">laravue.dev</a>
-                </h4>
-                <p>tuandm deployed 2019/4/19 10:23</p>
-              </el-card>
-            </el-timeline-item>
-          </el-timeline>
+      <el-tab-pane label="Token Purchases" name="second">
+        <div class="user-activity">
+          <div v-for="(innerTransaction, idx) in tokenTransactions" :key="idx" class="post">
+            <div class="user-block">
+              <div>Token Amount: {{ innerTransaction.token_amount }}</div>
+              <div>Price: {{ parseMoneyAmount(innerTransaction.descriptor) }}</div>
+              <div>Date: {{ innerTransaction.created_at | dateFormatter }}</div>
+            </div>
+          </div>
+          <button :disabled="!tokenLoadMoreEnabled" @click="nextTokenPage">Load More</button>
         </div>
       </el-tab-pane>
       <el-tab-pane v-loading="updating" label="Account" name="third">
@@ -167,10 +45,26 @@
 
 <script>
 import Resource from '@/api/resource';
+import TokenResource from '@/api/tokenTransaction';
+// import TokenResource from '@/api/tokenTransaction';
 const userResource = new Resource('users');
-
+const tokenResource = new TokenResource();
+// const tokenResource = new TokenResource();
 export default {
+  filters: {
+    dateFormatter(date){
+      return new Date(date).toLocaleString('id-ID');
+    },
+  },
   props: {
+    // comicLoadMore: {
+    //   type: Boolean,
+    //   default: true,
+    // },
+    // tokenLoadMore: {
+    //   type: Boolean,
+    //   default: true,
+    // },
     user: {
       type: Object,
       default: () => {
@@ -182,9 +76,40 @@ export default {
         };
       },
     },
+    // tokenTransactions: {
+    //   type: Array,
+    //   default: () => [],
+    // },
+    // comicTransactions: {
+    //   type: Array,
+    //   default: () => [],
+    // },
   },
   data() {
     return {
+      comicCount: 0,
+      tokenCount: 0,
+      comicTransactions: [],
+      tokenTransactions: [],
+      // user: {},
+      comicTransactionQuery: {
+        limit: 20,
+        paginate: 20,
+        sort_by_desc: 'created_at',
+        with: 'transactionable.comic',
+        where_not_null: 'transactionable_type',
+      },
+      tokenTransactionQuery: {
+        limit: 20,
+        paginate: 20,
+        sort_by_desc: 'created_at',
+        with: 'transactionable.comic',
+        where_null: 'transactionable_type',
+      },
+      comicTransactionCurrentPage: 1,
+      tokenTransactionCurrentPage: 1,
+      tokenLoadMoreEnabled: true,
+      comicLoadMoreEnabled: true,
       activeActivity: 'first',
       carouselImages: [
         'https://cdn.laravue.dev/photo1.png',
@@ -193,9 +118,62 @@ export default {
         'https://cdn.laravue.dev/photo4.jpg',
       ],
       updating: false,
+      // transactions: [],
+      // transactionQuery: {
+      //   page: 1,
+      //   limit: 15,
+      //   keyword: '',
+      //   role: '',
+      // },
     };
   },
+  mounted(){
+    this.getTokenTransactions();
+    this.getComicTransactions();
+  },
   methods: {
+    async getTokenTransactions(){
+      this.tokenTransactionQuery.where_user_id = this.$route.params && this.$route.params.id;
+      this.tokenTransactionQuery.page = this.tokenTransactionCurrentPage;
+      const { data } = await tokenResource.list(this.tokenTransactionQuery);
+      if (this.tokenTransactions.length > 0){
+        this.tokenTransactions = this.tokenTransactions.concat(data.items);
+      } else {
+        this.tokenTransactions = data.items;
+        this.tokenCount = data.total;
+      }
+      if (this.tokenCount <= this.tokenTransactions.length){
+        this.tokenLoadMoreEnabled = false;
+      }
+      return data;
+    },
+    async getComicTransactions(){
+      this.comicTransactionQuery.where_user_id = this.$route.params && this.$route.params.id;
+      this.comicTransactionQuery.page = this.comicTransactionCurrentPage;
+      const { data } = await tokenResource.list(this.comicTransactionQuery);
+      if (this.comicTransactions.length > 0){
+        this.comicTransactions = this.comicTransactions.concat(data.items);
+      } else {
+        this.comicTransactions = data.items;
+        this.comicCount = data.total;
+      }
+      if (this.comicCount <= this.comicTransactions.length){
+        this.comicLoadMoreEnabled = false;
+      }
+      return data;
+    },
+    parseMoneyAmount(descriptorObj){
+      const descriptor = JSON.parse(descriptorObj);
+      return descriptor.money_value.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    },
+    nextTokenPage(){
+      this.tokenTransactionCurrentPage += 1;
+      this.getTokenTransactions();
+    },
+    nextComicPage(){
+      this.comicTransactionCurrentPage += 1;
+      this.getComicTransactions();
+    },
     handleClick(tab, event) {
       console.log('Switching tab ', tab, event);
     },
@@ -282,11 +260,9 @@ export default {
     line-height: 200px;
     margin: 0;
   }
-
   .el-carousel__item:nth-child(2n) {
     background-color: #99a9bf;
   }
-
   .el-carousel__item:nth-child(2n+1) {
     background-color: #d3dce6;
   }

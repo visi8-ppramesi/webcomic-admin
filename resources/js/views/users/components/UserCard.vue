@@ -17,7 +17,7 @@
           <el-table-column prop="name" label="Name" />
           <el-table-column label="Count" align="left" width="100">
             <template slot-scope="scope">
-              {{ scope.row.count | toThousandFilter }}
+              {{ scope.row.count }}
             </template>
           </el-table-column>
         </el-table>
@@ -33,6 +33,7 @@
 
 <script>
 import PanThumb from '@/components/PanThumb';
+import _ from 'lodash';
 
 export default {
   components: { PanThumb },
@@ -52,20 +53,36 @@ export default {
   data() {
     return {
       social: [
-        {
-          'name': 'Followers',
-          'count': 1235,
-        },
-        {
-          'name': 'Following',
-          'count': 23512,
-        },
-        {
-          'name': 'Friends',
-          'count': 7242,
-        },
+      ],
+      fields: [
+        'id',
+        'email',
+        'total_tokens',
       ],
     };
+  },
+  watch: {
+    user: function(){
+      this.social = [];
+      Object.keys(this.user).forEach((el) => {
+        if (_.includes(this.fields, el)){
+          this.social.push({
+            'name': _.startCase(el),
+            'count': this.user[el],
+          });
+        }
+      });
+      return this.user;
+    },
+  },
+  created(){
+    // this.social = [];
+    // Object.keys(this.user).forEach((el) => {
+    //   this.social.push({
+    //     'name': el,
+    //     'count': this.user[el],
+    //   });
+    // });
   },
   methods: {
     getRole() {

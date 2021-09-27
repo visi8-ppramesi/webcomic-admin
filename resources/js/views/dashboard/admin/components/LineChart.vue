@@ -6,12 +6,14 @@
 import echarts from 'echarts';
 require('echarts/theme/macarons'); // echarts theme
 import { debounce } from '@/utils';
+import dayjs from 'dayjs';
+import _ from 'lodash';
 
 export default {
   props: {
     dates: {
       type: Array,
-      default: () => [],
+      default: () => ['01-01-2020'],
     },
     className: {
       type: String,
@@ -83,11 +85,13 @@ export default {
       }
     },
     setOptions({ comic_bucket, token_bucket } = {}) {
-      const dayDay = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const today = (new Date()).getDay();
+      const currentDate = this.dates[0] || '01-01-20';
+      const dayDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      // const today = (new Date()).getDay();
       const k = [];
-      for (let x = 0; x < this.dates.length; x++){
-        k.push(dayDay[(today + x - 1) % 7]);
+      const firstDate = dayjs(_.reverse(currentDate.split('-')).join('-')).day();
+      for (let x = firstDate; x < this.dates.length; x++){
+        k.push(dayDay[x % 7]);
       }
       this.chart.setOption({
         xAxis: {

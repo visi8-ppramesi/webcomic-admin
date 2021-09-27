@@ -1,21 +1,25 @@
 <template>
   <div class="dashboard-editor-container">
-    <el-date-picker
-      v-model="startDate"
-      type="date"
-      placeholder="Pick start date"
-      format="yyyy/MM/dd"
-      @change="fetchTransactions"
-    />
-    <!-- </el-date-picker> -->
-    <el-date-picker
-      v-model="endDate"
-      type="date"
-      placeholder="Pick end date"
-      format="yyyy/MM/dd"
-      @change="fetchTransactions"
-    />
-    <!-- </el-date-picker> -->
+    <div style="margin-bottom:16px;">
+      Daily Transactions
+    </div>
+    <div style="margin-bottom:16px;">
+      <el-date-picker
+        v-model="startDate"
+        type="date"
+        placeholder="Pick start date"
+        format="yyyy/MM/dd"
+        @change="fetchTransactions"
+      />
+      <span> - </span>
+      <el-date-picker
+        v-model="endDate"
+        type="date"
+        placeholder="Pick end date"
+        format="yyyy/MM/dd"
+        @change="fetchTransactions"
+      />
+    </div>
     <!-- <github-corner style="position: absolute; top: 0px; border: 0; right: 0;" /> -->
 
     <!-- <panel-group @handleSetLineChartData="handleSetLineChartData" /> -->
@@ -24,7 +28,7 @@
       <line-chart :chart-data="lineChartData" :dates="dates" />
     </el-row>
 
-    <el-row :gutter="32">
+    <!-- <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :lg="8">
         <div class="chart-wrapper">
           <raddar-chart />
@@ -52,7 +56,7 @@
       <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
         <box-card />
       </el-col>
-    </el-row>
+    </el-row> -->
   </div>
 </template>
 
@@ -60,12 +64,12 @@
 // import GithubCorner from '@/components/GithubCorner';
 // import PanelGroup from './components/PanelGroup';
 import LineChart from './components/LineChart';
-import RaddarChart from './components/RaddarChart';
-import PieChart from './components/PieChart';
-import BarChart from './components/BarChart';
-import TransactionTable from './components/TransactionTable';
-import TodoList from './components/TodoList';
-import BoxCard from './components/BoxCard';
+// import RaddarChart from './components/RaddarChart';
+// import PieChart from './components/PieChart';
+// import BarChart from './components/BarChart';
+// import TransactionTable from './components/TransactionTable';
+// import TodoList from './components/TodoList';
+// import BoxCard from './components/BoxCard';
 import { fetchDailyTransactions } from '../../../api/data';
 import dayjs from 'dayjs';
 
@@ -94,12 +98,12 @@ export default {
     // GithubCorner,
     // PanelGroup,
     LineChart,
-    RaddarChart,
-    PieChart,
-    BarChart,
-    TransactionTable,
-    TodoList,
-    BoxCard,
+    // RaddarChart,
+    // PieChart,
+    // BarChart,
+    // TransactionTable,
+    // TodoList,
+    // BoxCard,
   },
   data() {
     return {

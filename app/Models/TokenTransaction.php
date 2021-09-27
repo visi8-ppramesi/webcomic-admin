@@ -11,6 +11,8 @@ use App\Filters\TransactionsWhereChapter;
 use App\Filters\TransactionsWhereType;
 use App\Filters\WhereCreatedAfter;
 use App\Filters\WhereCreatedBefore;
+use App\Filters\WhereNotNull;
+use App\Filters\WhereNull;
 use App\Filters\WhereTransactionableId;
 use App\Filters\WhereUserId;
 use App\Filters\With;
@@ -28,6 +30,8 @@ class TokenTransaction extends Model
             Get::class,
             TransactionsWhereChapter::class,
             TransactionsWhereType::class,
+            WhereNotNull::class,
+            WhereNull::class,
             WhereTransactionableId::class,
             WhereCreatedAfter::class,
             WhereCreatedBefore::class,
@@ -50,6 +54,6 @@ class TokenTransaction extends Model
 
     public function getBucketDateAttribute()
     {
-        return Carbon::parse($this->created_at)->format('d-m-y');
+        return Carbon::parse($this->created_at)->format('d-m-Y');
     }
 }

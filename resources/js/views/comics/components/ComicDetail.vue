@@ -352,7 +352,7 @@ const defaultChapterForm = {
   ],
 };
 const defaultComicForm = {
-  is_draft: true,
+  is_draft: false,
   authors: [],
   title: '',
   content: '',
@@ -518,6 +518,7 @@ export default {
           });
           this.postForm.genres = JSON.parse(this.postForm.genres);
           this.postForm.tags = JSON.parse(this.postForm.tags);
+          this.postForm.is_draft = false;
           // Just for test
           // this.postForm.title += `   Article Id:${this.postForm.id}`;
           // this.postForm.content_short += `   Article Id:${this.postForm.id}`;
@@ -545,7 +546,7 @@ export default {
       if (this.isEdit){
         updateComic(this.postForm.id, this.postForm)
           .then((response) => {
-
+            this.$router.push('/comic');
           })
           .catch((error) => {
             console.log(error);
@@ -553,7 +554,7 @@ export default {
       } else {
         createComic(this.postForm)
           .then((response) => {
-
+            this.$router.push('/comic');
           })
           .catch((error) => {
             console.log(error);
@@ -578,23 +579,24 @@ export default {
       // });
     },
     draftForm() {
-      if (
-        this.postForm.content.length === 0 ||
-        this.postForm.title.length === 0
-      ) {
-        this.$message({
-          message: 'Please enter required title and content',
-          type: 'warning',
-        });
-        return;
-      }
-      this.$message({
-        message: 'Successfully saved',
-        type: 'success',
-        showClose: true,
-        duration: 1000,
-      });
+      // if (
+      //   this.postForm.content.length === 0 ||
+      //   this.postForm.title.length === 0
+      // ) {
+      //   this.$message({
+      //     message: 'Please enter required title and content',
+      //     type: 'warning',
+      //   });
+      //   return;
+      // }
+      // this.$message({
+      //   message: 'Successfully saved',
+      //   type: 'success',
+      //   showClose: true,
+      //   duration: 1000,
+      // });
       this.postForm.is_draft = true;
+      this.submitForm();
     },
     getTagList(query) {
       tagResource.list().then(response => {

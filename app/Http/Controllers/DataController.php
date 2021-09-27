@@ -33,7 +33,7 @@ class DataController extends Controller
         $retVal = [];
         $len = (int)round(abs($end->timestamp - $start->timestamp) / (24 * 60 * 60));
         for($x = 0; $x < $len; $x++){
-            $date = Carbon::parse($start)->addDays($x)->format('d-m-y');
+            $date = Carbon::parse($start)->addDays($x)->format('d-m-Y');
             $retVal[] = $date;
         }
 
@@ -78,8 +78,7 @@ class DataController extends Controller
         return response()->json([
             'comic_bucket' => $comicAmounts,
             'token_bucket' => $tokenAmounts,
-            'dates' => $datesArray,
-            'asdf' => $purchaseComicBucket
+            'dates' => $datesArray
         ], 200);
     }
 

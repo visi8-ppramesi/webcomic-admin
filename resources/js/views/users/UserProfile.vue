@@ -4,10 +4,18 @@
       <el-row :gutter="20">
         <el-col :span="6">
           <user-card :user="user" />
-          <user-bio />
+          <!-- <user-bio /> -->
         </el-col>
         <el-col :span="18">
-          <user-activity :user="user" />
+          <user-activity
+            :user="user"
+            :token-transactions="tokenTransactions"
+            :comic-transactions="comicTransactions"
+            :comic-load-more="comicLoadMoreEnabled"
+            :token-load-more="tokenLoadMoreEnabled"
+            @nextComicPage="nextComicPage"
+            @nextTransactionPage="nextTransactionPage"
+          />
         </el-col>
       </el-row>
     </el-form>
@@ -16,7 +24,7 @@
 
 <script>
 import Resource from '@/api/resource';
-import UserBio from './components/UserBio';
+// import UserBio from './components/UserBio';
 import UserCard from './components/UserCard';
 import UserActivity from './components/UserActivity';
 import TokenResource from '@/api/tokenTransaction';
@@ -25,18 +33,32 @@ const tokenResource = new TokenResource();
 const userResource = new Resource('users');
 export default {
   name: 'EditUser',
-  components: { UserBio, UserCard, UserActivity },
+  components: { UserCard, UserActivity },
   data() {
     return {
-      transactions: [],
+      comicCount: 0,
+      tokenCount: 0,
+      comicTransactions: [],
+      tokenTransactions: [],
       user: {},
-      transactionQuery: {
-        page: 1,
+      comicTransactionQuery: {
         limit: 20,
         paginate: 20,
         sort_by_desc: 'created_at',
         with: 'transactionable.comic',
+        where_not_null: 'transactionable_type',
       },
+      tokenTransactionQuery: {
+        limit: 20,
+        paginate: 20,
+        sort_by_desc: 'created_at',
+        with: 'transactionable.comic',
+        where_null: 'transactionable_type',
+      },
+      comicTransactionCurrentPage: 1,
+      tokenTransactionCurrentPage: 1,
+      tokenLoadMoreEnabled: true,
+      comicLoadMoreEnabled: true,
     };
   },
   watch: {
@@ -50,14 +72,48 @@ export default {
       return;
     }
     this.getUser(id);
-    this.getTransactions(id);
+    // this.getComicTransactions(id);
+    // this.getTokenTransactions(id);
   },
   methods: {
-    async getTransactions(id){
-      console.log('asdfasdf');
-      this.transactionQuery.where_user_id = id;
-      const { data } = await tokenResource.list(this.transactionQuery);
-      this.transactions = data;
+    nextTransactionPage(){
+      const id = this.$route.params && this.$route.params.id;
+      this.tokenTransactionCurrentPage += 1;
+      this.getTokenTransactions(id);
+    },
+    nextComicPage(){
+      const id = this.$route.params && this.$route.params.id;
+      this.comicTransactionCurrentPage += 1;
+      this.getComicTransactions(id);
+    },
+    async getTokenTransactions(id){
+      this.tokenTransactionQuery.where_user_id = id;
+      this.tokenTransactionQuery.page = this.tokenTransactionCurrentPage;
+      const { data } = await tokenResource.list(this.tokenTransactionQuery);
+      if (this.tokenTransactions.length > 0){
+        this.tokenTransactions = this.tokenTransactions.concat(data.items);
+      } else {
+        this.tokenTransactions = data.items;
+        this.tokenCount = data.total;
+      }
+      if (this.tokenCount <= this.tokenTransactions.length){
+        this.tokenLoadMoreEnabled = false;
+      }
+      return data;
+    },
+    async getComicTransactions(id){
+      this.comicTransactionQuery.where_user_id = id;
+      this.comicTransactionQuery.page = this.comicTransactionCurrentPage;
+      const { data } = await tokenResource.list(this.comicTransactionQuery);
+      if (this.comicTransactions.length > 0){
+        this.comicTransactions = this.comicTransactions.concat(data.items);
+      } else {
+        this.comicTransactions = data.items;
+        this.comicCount = data.total;
+      }
+      if (this.comicCount <= this.comicTransactions.length){
+        this.comicLoadMoreEnabled = false;
+      }
       return data;
     },
     async getUser(id) {
