@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ComicController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\PageController;
@@ -101,6 +102,10 @@ Route::namespace('Api')->group(function() {
         Route::get('data/transactions/user/{userId}/{startDate?}/{endDate?}', [DataController::class, 'getUserTransactionData']);
         Route::get('data/transactions/comic/{comicId}/{startDate?}/{endDate?}', [DataController::class, 'getComicTransactionData']);
         Route::get('data/transactions/chapter/{chapterId}/{startDate?}/{endDate?}', [DataController::class, 'getChapterTransactionData']);
+
+        Route::get('comments', [CommentController::class, 'index']);
+        Route::get('comments/{comment}', [CommentController::class, 'show']);
+        Route::delete('comment/{comment}', [CommentController::class, 'destroy']);
     });
 });
 

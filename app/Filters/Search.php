@@ -15,6 +15,9 @@ class Search extends Filter{
         ],
         "App\Models\User" => [
             'name', 'email'
+        ],
+        "App\Models\Comment" => [
+            'comment', ['commenter' => 'name'], ['commenter' => 'email']
         ]
     ];
     protected function applyFilter($builder){

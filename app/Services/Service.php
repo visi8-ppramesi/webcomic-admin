@@ -39,7 +39,7 @@ class Service{
 
     public function setData($data){
         foreach($this->fields as $field){
-            if(!empty($data[$field])){
+            if(!is_null($data[$field])){
                 $this->data[$field] = $data[$field];
             }
         }

@@ -5,10 +5,8 @@
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
-        {{ $t('table.add') }}
-      </el-button>
     </div>
+
     <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">
@@ -16,35 +14,28 @@
         </template>
       </el-table-column>
 
-      <!-- <el-table-column width="180px" align="center" label="Date">
-        <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
-      </el-table-column> -->
-
-      <el-table-column min-width="180px" label="Title">
+      <el-table-column min-width="180px" label="Commenter">
         <template slot-scope="{row}">
-          <router-link :to="'/comic/edit/'+row.id" class="link-type">
-            <span>{{ row.title }}</span>
-          </router-link>
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Authors">
+      <el-table-column width="180px" align="center" label="Comment">
         <template slot-scope="scope">
-          <span>{{ scope.row.authors }}</span>
+          <!-- <span v-html="scope.row.comment" /> -->
+          <span @click="openComment(scope.row.id)">{{ scope.row.comment | truncate(50, '...') }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Genres">
+      <el-table-column width="180px" align="center" label="Commented On">
         <template slot-scope="scope">
-          <span>{{ scope.row.genres }}</span>
+          <span>{{ scope.row.commentable_type | parseCommentableObject }} ID {{ scope.row.commentable_id }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Release Date">
+      <el-table-column width="180px" align="center" label="Children">
         <template slot-scope="scope">
-          <span>{{ scope.row.release_date | dateFormatter }}</span>
+          <span>{{ scope.row.children }}</span>
         </template>
       </el-table-column>
 
@@ -54,53 +45,52 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Status">
-        <template slot-scope="scope">
-          <span>{{ scope.row.is_draft ? 'Draft' : 'Published' }}</span>
-        </template>
-      </el-table-column>
-
       <el-table-column align="center" label="Actions" width="200">
         <template slot-scope="scope">
-          <router-link :to="'/comic/edit/'+scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">
-              Edit
-            </el-button>
-          </router-link>
           <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteItem(scope.row.id)">
             Delete
           </el-button>
         </template>
       </el-table-column>
     </el-table>
-
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+
+    <el-dialog :visible.sync="dialogVisible" title="Comment">
+      <comments
+        :comment="selectedComment"
+      />
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import Pagination from '@/components/Pagination'; // Secondary package based on el-pagination
 import Resource from '@/api/resource';
-const comicResource = new Resource('comics');
+import Comments from './components/Comments';
+const commentResource = new Resource('comments');
 
 export default {
-  name: 'ArticleList',
-  components: { Pagination },
+  name: 'CommentList',
+  components: { Pagination, Comments },
   filters: {
     dateFormatter(date) {
       return (new Date(date)).toLocaleDateString('id-ID');
     },
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger',
-      };
-      return statusMap[status];
+    truncate(text, length, clamp){
+      clamp = clamp || '...';
+      var node = document.createElement('div');
+      node.innerHTML = text;
+      var content = node.textContent;
+      return content.length > length ? content.slice(0, length) + clamp : content;
+    },
+    parseCommentableObject(objClass){
+      return objClass.split('\\')[2];
     },
   },
   data() {
     return {
+      selectedComment: null,
+      dialogVisible: false,
       query: {
         keyword: '',
       },
@@ -111,7 +101,9 @@ export default {
         page: 1,
         limit: 20,
         paginate: 20,
-        with: 'authors',
+        // comment_parentless: 1,
+        comment_with_children: 1,
+        with: ['commentable', 'commenter'],
       },
     };
   },
@@ -119,32 +111,39 @@ export default {
     this.getList();
   },
   methods: {
+    async openComment(id){
+      const { data } = await commentResource.get(id);
+      this.selectedComment = data;
+      this.dialogVisible = true;
+
+      // commentResource.get(id)
+      //   .then(({ data }) => {
+      //     this.selectedComment = data;
+      //     console.log(this.selectedComment);
+      //     this.dialogVisible = true;
+      //     console.log('asdasdf');
+      //   });
+    },
     deleteItem(id){
-      comicResource.destroy(id)
+      commentResource.destroy(id)
         .then((response) => {
           this.getList();
         });
-    },
-    async getList() {
-      this.listLoading = true;
-      const { data } = await comicResource.list(this.listQuery);
-      this.list = data.items;
-      this.list.forEach((el, key) => {
-        this.list[key].genres = JSON.parse(el.genres).join(', ');
-        this.list[key].tags = JSON.parse(el.tags).join(', ');
-        this.list[key].authors = el.authors.map((author) => {
-          return author.name;
-        }).join(', ');
-      });
-      this.total = data.total;
-      this.listLoading = false;
     },
     handleFilter(){
       this.listQuery['search'] = this.query.keyword;
       this.getList();
     },
-    handleCreate(){
-      this.$router.push('/comic/create');
+    async getList() {
+      this.listLoading = true;
+      const { data } = await commentResource.list(this.listQuery);
+      this.list = data.items;
+      this.list.forEach((el, key) => {
+        this.list[key].name = el.commenter.name;
+        this.list[key].children = el.all_children_with_commenter.length;
+      });
+      this.total = data.total;
+      this.listLoading = false;
     },
   },
 };

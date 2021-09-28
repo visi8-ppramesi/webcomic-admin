@@ -6,11 +6,11 @@
           v-loading="loading"
           style="margin-left: 10px;"
           type="success"
-          @click="submitForm"
+          @click="submitForm(false)"
         >
-          Submit
+          Publish
         </el-button>
-        <el-button v-loading="loading" type="warning" @click="draftForm">
+        <el-button v-loading="loading" type="warning" @click="submitForm(true)">
           Draft
         </el-button>
       </sticky>
@@ -461,7 +461,7 @@ export default {
   },
   methods: {
     tester(){
-      console.log(this.postForm);
+      console.log(JSON.stringify(this.postForm));
     },
     removeChapter(index){
       this.postForm.chapters.splice(index, 1);
@@ -542,7 +542,8 @@ export default {
       });
       this.$store.dispatch('updateVisitedView', route);
     },
-    submitForm() {
+    submitForm(draft = false) {
+      this.postForm.is_draft = draft ? 1 : 0;
       if (this.isEdit){
         updateComic(this.postForm.id, this.postForm)
           .then((response) => {

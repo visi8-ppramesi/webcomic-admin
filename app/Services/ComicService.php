@@ -58,7 +58,7 @@ class ComicService extends Service{
 
     public function setData($data){
         foreach($this->fields as $field){
-            if(!empty($data[$field])){
+            if(!is_null($data[$field])){
                 if(($field == 'tags' || $field == 'genres')
                     && (gettype($data[$field]) == 'array' || gettype($data[$field]) == 'object')){
                     $data[$field] = json_encode(array_values($data[$field]));

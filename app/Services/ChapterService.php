@@ -25,7 +25,7 @@ class ChapterService extends Service{
 
     public function setData($data){
         foreach($this->fields as $field){
-            if(!empty($data[$field])){
+            if(!is_null($data[$field])){
                 if($field === 'release_date'){
                     $data[$field] = Carbon::parse($data[$field]);
                 }

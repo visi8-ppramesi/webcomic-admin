@@ -7,13 +7,19 @@ use Illuminate\Support\Str;
 
 abstract class Filter{
     public $noParam;
+    protected $onlyModels = [];
 
     public function handle($request, Closure $next){
-        if(!request()->has($this->filterName()) && !$this->noParam){
-            return $next($request);
-        }
         $builder = $next($request);
-        return $this->applyFilter($builder);
+        if(!request()->has($this->filterName()) && !$this->noParam){
+            return $builder;
+        }
+        $modelName = get_class($builder->getModel());
+        if(empty($this->onlyModels) || in_array($modelName, $this->onlyModels)){
+            return $this->applyFilter($builder);
+        }else{
+            return $builder;
+        }
     }
 
     protected abstract function applyFilter($builder);

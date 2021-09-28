@@ -4,8 +4,7 @@ namespace App\Helpers;
 
 class Query{
     public static function buildWheresBuilder($builder, $query, $columns){
-        $self = new static;
-        return $builder->where(function($q)use($query, $columns, &$self){
+        return $builder->where(function($q)use($query, $columns){
             foreach($columns as $idx => $column){
                 if($idx == 0){
                     if(gettype($column) === 'string'){

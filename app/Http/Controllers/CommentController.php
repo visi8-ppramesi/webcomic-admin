@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Laravue\JsonResponse;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,14 @@ class CommentController extends Controller
      */
     public function index()
     {
-        //
+        $comic = Comment::pipe();
+        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
+            $comic = $comic->getCollection();
+        }
+        return response()->json(new JsonResponse([
+            'items' => $comic,
+            'total' => Comment::pipeCount()
+        ]));
     }
 
     /**
@@ -46,7 +54,8 @@ class CommentController extends Controller
      */
     public function show(Comment $comment)
     {
-        //
+        $comment->load(['commentable', 'commenter', 'allChildrenWithCommenter']);
+        return response()->json(new JsonResponse($comment));
     }
 
     /**
@@ -80,6 +89,6 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        //
+        return response()->json($comment->delete());
     }
 }

@@ -19,6 +19,7 @@ import Layout from '@/layout';
 // import tableRoutes from './modules/table';
 // import adminRoutes from './modules/admin';
 import comicRoutes from './modules/comic';
+import commentRoutes from './modules/comment';
 import authorRoutes from './modules/author';
 // import nestedRoutes from './modules/nested';
 import errorRoutes from './modules/error';
@@ -168,6 +169,7 @@ export const asyncRoutes = [
   authorRoutes,
   tagRoutes,
   genreRoutes,
+  commentRoutes,
   permissionRoutes,
   // {
   //   path: '/theme',
@@ -197,6 +199,12 @@ export const asyncRoutes = [
   //   ],
   // },
   errorRoutes,
+  {
+    path: '/test',
+    component: () => import('@/views/test/Test'),
+    name: 'test',
+    meta: { title: 'testing' },
+  },
   // excelRoutes,
   // {
   //   path: '/zip',
