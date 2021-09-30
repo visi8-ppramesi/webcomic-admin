@@ -19,14 +19,27 @@
           <div v-for="(innerTransaction, idx) in tokenTransactions" :key="idx" class="post">
             <div class="user-block">
               <div>Token Amount: {{ innerTransaction.token_amount }}</div>
-              <div>Price: {{ parseMoneyAmount(innerTransaction.descriptor) }}</div>
+              <!-- <div>Price: {{ parseMoneyAmount(innerTransaction.descriptor) }}</div> -->
+              <div>Price: {{ parseDescriptor(innerTransaction.descriptor).money_value | currencyFormatter }}</div>
+              <div>Payment Method: {{ parseDescriptor(innerTransaction.descriptor).payment_type }}</div>
               <div>Date: {{ innerTransaction.created_at | dateFormatter }}</div>
             </div>
           </div>
           <button :disabled="!tokenLoadMoreEnabled" @click="nextTokenPage">Load More</button>
         </div>
       </el-tab-pane>
-      <el-tab-pane v-loading="updating" label="Account" name="third">
+      <el-tab-pane label="Token Granted" name="third">
+        <div class="user-activity">
+          <div v-for="(innerTransaction, idx) in tokenGrantedTransactions" :key="idx" class="post">
+            <div class="user-block">
+              <div>Token Amount: {{ innerTransaction.token_amount }}</div>
+              <div>Date: {{ innerTransaction.created_at | dateFormatter }}</div>
+            </div>
+          </div>
+          <button :disabled="!tokenLoadMoreEnabled" @click="nextTokenGrantedPage">Load More</button>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane v-loading="updating" label="Account" name="fourth">
         <el-form-item label="Name">
           <el-input v-model="user.name" :disabled="user.role === 'admin'" />
         </el-form-item>
@@ -54,6 +67,9 @@ export default {
   filters: {
     dateFormatter(date){
       return new Date(date).toLocaleString('id-ID');
+    },
+    currencyFormatter(amount){
+      return amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
     },
   },
   props: {
@@ -89,25 +105,39 @@ export default {
     return {
       comicCount: 0,
       tokenCount: 0,
+      tokenGrantedCount: 0,
       comicTransactions: [],
       tokenTransactions: [],
+      tokenGrantedTransactions: [],
       // user: {},
       comicTransactionQuery: {
         limit: 20,
         paginate: 20,
         sort_by_desc: 'created_at',
         with: 'transactionable.comic',
-        where_not_null: 'transactionable_type',
+        // where_not_null: 'transactionable_type',
+        transactions_where_type: 'purchase_comic',
       },
       tokenTransactionQuery: {
         limit: 20,
         paginate: 20,
         sort_by_desc: 'created_at',
         with: 'transactionable.comic',
-        where_null: 'transactionable_type',
+        // where_null: 'transactionable_type',
+        transactions_where_type: 'purchase_token',
+      },
+      tokenGrantedTransactionQuery: {
+        limit: 20,
+        paginate: 20,
+        sort_by_desc: 'created_at',
+        with: 'transactionable.comic',
+        // where_null: 'transactionable_type',
+        transactions_where_type: 'granted_token',
       },
       comicTransactionCurrentPage: 1,
       tokenTransactionCurrentPage: 1,
+      tokenGrantedTransactionCurrentPage: 1,
+      tokenGrantedLoadMoreEnabled: true,
       tokenLoadMoreEnabled: true,
       comicLoadMoreEnabled: true,
       activeActivity: 'first',
@@ -130,8 +160,24 @@ export default {
   mounted(){
     this.getTokenTransactions();
     this.getComicTransactions();
+    this.getTokenGrantedTransactions();
   },
   methods: {
+    async getTokenGrantedTransactions(){
+      this.tokenGrantedTransactionQuery.where_user_id = this.$route.params && this.$route.params.id;
+      this.tokenGrantedTransactionQuery.page = this.tokenGrantedTransactionCurrentPage;
+      const { data } = await tokenResource.list(this.tokenGrantedTransactionQuery);
+      if (this.tokenGrantedTransactions.length > 0){
+        this.tokenGrantedTransactions = this.tokenGrantedTransactions.concat(data.items);
+      } else {
+        this.tokenGrantedTransactions = data.items;
+        this.tokenGrantedCount = data.total;
+      }
+      if (this.tokenGrantedCount <= this.tokenGrantedTransactions.length){
+        this.tokenGrantedLoadMoreEnabled = false;
+      }
+      return data;
+    },
     async getTokenTransactions(){
       this.tokenTransactionQuery.where_user_id = this.$route.params && this.$route.params.id;
       this.tokenTransactionQuery.page = this.tokenTransactionCurrentPage;
@@ -162,9 +208,16 @@ export default {
       }
       return data;
     },
+    parseDescriptor(descriptorObj){
+      return JSON.parse(descriptorObj);
+    },
     parseMoneyAmount(descriptorObj){
-      const descriptor = JSON.parse(descriptorObj);
+      const descriptor = this.parseDescriptor(descriptorObj);
       return descriptor.money_value.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    },
+    nextTokenGrantedPage(){
+      this.tokenGrantedTransactionCurrentPage += 1;
+      this.getTokenGrantedTransactions();
     },
     nextTokenPage(){
       this.tokenTransactionCurrentPage += 1;

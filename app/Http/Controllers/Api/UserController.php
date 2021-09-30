@@ -20,6 +20,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 use Validator;
 
 /**
@@ -230,5 +231,38 @@ class UserController extends BaseController
                 'array'
             ],
         ];
+    }
+
+    /**
+     * Get permissions from role
+     *
+     * @param User $user
+     * @return boolean
+     */
+    public function checkBalance(User $user)
+    {
+        $checkTokenAmount = $user->checkTokenAmount();
+        return response()->json($checkTokenAmount[0] === $checkTokenAmount[1], 200);
+    }
+
+    /**
+     * Get permissions from role
+     *
+     * @param User $user
+     * @return boolean
+     */
+    public function rectifyBalance(User $user)
+    {
+        $checkTokenAmount = $user->rectifyTokenAmount();
+        return response()->json($checkTokenAmount, 200);
+    }
+
+    public function grantTokens(Request $request, User $user){
+        $validated = $request->validate([
+            'token_amount' => ['integer', 'required', 'gt:0']
+        ]);
+
+        $grant = $user->grantTokens($validated['token_amount']);
+        return response()->json($grant, 200);
     }
 }

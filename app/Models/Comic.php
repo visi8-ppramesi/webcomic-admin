@@ -26,6 +26,10 @@ class Comic extends Model implements ICommentable
         ];
     }
 
+    public function transactions(){
+        return $this->hasManyThrough(TokenTransaction::class, Chapter::class, 'comic_id' , 'transactionable_id', 'id', 'id');
+    }
+
     public function authors(){
         return $this->belongsToMany(Author::class);
     }
@@ -41,6 +45,11 @@ class Comic extends Model implements ICommentable
     public function purchasedBy(){
         $whereName = implode('->', ['purchase_history', $this->id, 'id']);
         return User::where($whereName, $this->id)->get();
+    }
+
+    public function getTotalTokensAttribute(){
+        $chapters = $this->chapters->pluck('id');
+        return TokenTransaction::where('transactionable_type', Chapter::class)->whereIn('transactionable_id', $chapters)->get()->sum('token_amount');
     }
 
     // public function comments(){

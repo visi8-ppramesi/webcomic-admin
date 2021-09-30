@@ -2,7 +2,7 @@
   <div>
     <comment :comment-object="comment" />
     <div v-if="comment.all_children_with_commenter && comment.all_children_with_commenter.length > 0">
-      <comment v-for="(innerComment, idx) in comment.all_children_with_commenter" :key="idx" :comment-object="innerComment" />
+      <comment v-for="(innerComment, idx) in comment.all_children_with_commenter" :key="idx" style="width:95%; margin-left: 5%;" :comment-object="innerComment" />
     </div>
   </div>
 </template>

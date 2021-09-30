@@ -18,12 +18,15 @@ class ComicController extends Controller
      */
     public function index()
     {
-        $comic = Comic::pipe();
-        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
-            $comic = $comic->getCollection();
+        $comics = Comic::pipe();
+        if(get_parent_class($comics) === 'Illuminate\Pagination\AbstractPaginator'){
+            $comics = $comics->getCollection();
+        }
+        foreach($comics as $idx => $comic){
+            $comics[$idx]['total_tokens'] = $comic->total_tokens;
         }
         return response()->json(new JsonResponse([
-            'items' => $comic,
+            'items' => $comics,
             'total' => Comic::pipeCount()
         ]));
     }
@@ -71,6 +74,18 @@ class ComicController extends Controller
     {
         $comic->load(['authors', 'chapters.pages']);
         return response()->json(new JsonResponse($comic));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Comic  $comic
+     * @return \Illuminate\Http\Response
+     */
+    public function showTransactions(Comic $comic)
+    {
+        $comic->load(['transactions']);
+        return response()->json(new JsonResponse($comic->transactions));
     }
 
     /**

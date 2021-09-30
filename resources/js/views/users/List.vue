@@ -465,4 +465,8 @@ export default {
     clear: left;
   }
 }
+.fake-link{
+  color: rgb(51, 122, 183);
+  cursor: pointer;
+}
 </style>

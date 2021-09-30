@@ -3,7 +3,11 @@
     <el-form v-if="user" :model="user">
       <el-row :gutter="20">
         <el-col :span="6">
-          <user-card :user="user" />
+          <user-card
+            :user="user"
+            :is-token-consistent="tokenConsistent"
+            @userUpdate="getUser($route.params.id) && checkBalance($route.params.id)"
+          />
           <!-- <user-bio /> -->
         </el-col>
         <el-col :span="18">
@@ -23,19 +27,21 @@
 </template>
 
 <script>
-import Resource from '@/api/resource';
+// import Resource from '@/api/resource';
+import UserResource from '@/api/user';
 // import UserBio from './components/UserBio';
 import UserCard from './components/UserCard';
 import UserActivity from './components/UserActivity';
 import TokenResource from '@/api/tokenTransaction';
+import { Message } from 'element-ui';
 const tokenResource = new TokenResource();
-
-const userResource = new Resource('users');
+const userResource = new UserResource();
 export default {
   name: 'EditUser',
   components: { UserCard, UserActivity },
   data() {
     return {
+      tokenConsistent: true,
       comicCount: 0,
       tokenCount: 0,
       comicTransactions: [],
@@ -46,14 +52,16 @@ export default {
         paginate: 20,
         sort_by_desc: 'created_at',
         with: 'transactionable.comic',
-        where_not_null: 'transactionable_type',
+        // where_not_null: 'transactionable_type',
+        transactions_where_type: 'purchase_comic',
       },
       tokenTransactionQuery: {
         limit: 20,
         paginate: 20,
         sort_by_desc: 'created_at',
         with: 'transactionable.comic',
-        where_null: 'transactionable_type',
+        // where_null: 'transactionable_type',
+        transactions_where_type: 'purchase_token',
       },
       comicTransactionCurrentPage: 1,
       tokenTransactionCurrentPage: 1,
@@ -72,6 +80,7 @@ export default {
       return;
     }
     this.getUser(id);
+    this.checkBalance(id);
     // this.getComicTransactions(id);
     // this.getTokenTransactions(id);
   },
@@ -85,6 +94,19 @@ export default {
       const id = this.$route.params && this.$route.params.id;
       this.comicTransactionCurrentPage += 1;
       this.getComicTransactions(id);
+    },
+    checkBalance(id){
+      userResource.checkBalance(id)
+        .then((response) => {
+          this.tokenConsistent = response;
+          if (!response){
+            Message({
+              message: 'User token balance is inconsistent with token transactions! Please rectify!',
+              type: 'error',
+              duration: 5 * 1000,
+            });
+          }
+        });
     },
     async getTokenTransactions(id){
       this.tokenTransactionQuery.where_user_id = id;

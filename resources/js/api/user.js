@@ -20,6 +20,30 @@ class UserResource extends Resource {
       data: permissions,
     });
   }
+
+  checkBalance(id){
+    return request({
+      url: '/' + this.uri + '/' + id + '/checkbalance',
+      method: 'get',
+    });
+  }
+
+  rectifyBalance(id){
+    return request({
+      url: '/' + this.uri + '/' + id + '/rectifybalance',
+      method: 'get',
+    });
+  }
+
+  grantToken(id, tokenAmount){
+    return request({
+      url: '/' + this.uri + '/' + id + '/granttokens',
+      method: 'post',
+      data: {
+        token_amount: tokenAmount,
+      },
+    });
+  }
 }
 
 export { UserResource as default };

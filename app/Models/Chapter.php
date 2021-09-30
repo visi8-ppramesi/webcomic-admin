@@ -20,6 +20,10 @@ class Chapter extends Model implements ICommentable
         return $this->hasMany(Page::class);
     }
 
+    public function transactions(){
+        return $this->morphMany(TokenTransaction::class, 'transactionable');
+    }
+
     protected static function boot(){
         parent::boot();
         parent::deleting(function($chapter){

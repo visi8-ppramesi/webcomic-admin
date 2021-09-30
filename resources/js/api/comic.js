@@ -38,3 +38,10 @@ export function updateComic(id, data) {
     data,
   });
 }
+
+export function fetchTransactions(id) {
+  return request({
+    url: '/comics/' + id + '/transactions',
+    method: 'get',
+  });
+}

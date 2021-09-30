@@ -281,13 +281,33 @@ class User extends Authenticatable
         return $currentSubs;
     }
 
-    public function checkTokenAmount(){
+    public function getTotalTokensFromTransactions(){
         $transactions = TokenTransaction::where('user_id', $this->id)->get();
         $total = 0;
         foreach($transactions as $key => $transaction){
-            $number = json_decode($transaction->descriptor, true)['type'] == 'purchase_comic' ? $transaction->token_amount * -1 : $transaction->token_amount;
-            $total += $number;
+            $descriptorObj = json_decode($transaction->descriptor, true);
+            switch($descriptorObj['type']){
+                case 'purchase_token':
+                case 'granted_token':
+                    $total += $transaction->token_amount;
+                    break;
+                case 'purchase_comic':
+                    $total -= $transaction->token_amount;
+                    break;
+                default:
+                    //do nothing i guess...
+                    break;
+            }
+            // $number = json_decode($transaction->descriptor, true)['type'] == 'purchase_comic'
+            //     ? $transaction->token_amount * -1
+            //     : $transaction->token_amount;
+            // $total += $number;
         }
+        return $total;
+    }
+
+    public function checkTokenAmount(){
+        $total = $this->getTotalTokensFromTransactions();
         return [$total, $this->total_tokens];
     }
 
@@ -326,6 +346,26 @@ class User extends Authenticatable
             return $item->commenter_id == $this->id || $this->can('manage comment');
         }
         return false;
+    }
+
+    public function grantTokens($tokenAmount){
+        $descriptor = [
+            'date' => \Carbon\Carbon::now(),
+            'type' => 'granted_token',
+        ];
+        TokenTransaction::create([
+            'user_id' => $this->id,
+            'token_amount' => $tokenAmount,
+            'descriptor' => json_encode($descriptor)
+        ]);
+        $this->total_tokens += $tokenAmount;
+        return $this->save();
+    }
+
+    public function rectifyTokenAmount(){
+        $total = $this->getTotalTokensFromTransactions();
+        $this->total_tokens = $total;
+        return $this->save();
     }
 
     protected static function boot(){

@@ -16,10 +16,11 @@ class Resource {
       params: query,
     });
   }
-  get(id) {
+  get(id, query = {}) {
     return request({
       url: '/' + this.uri + '/' + id,
       method: 'get',
+      params: query,
     });
   }
   store(resource) {

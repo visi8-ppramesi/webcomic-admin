@@ -55,9 +55,13 @@ Route::namespace('Api')->group(function() {
         Route::post('user', [UserController::class, 'store']);//'UserController@store');
         Route::patch('user/{user}', [UserController::class, 'update']);//'UserController@update');
         Route::delete('user/{user}', [UserController::class, 'destroy']);//'UserController@destroy');
+        Route::get('/users/{user}/checkbalance', [UserController::class, 'checkBalance']);
+        Route::get('/users/{user}/rectifybalance', [UserController::class, 'rectifyBalance']);
+        Route::post('/users/{user}/granttokens', [UserController::class, 'grantTokens']);
 
         Route::get('comics', [ComicController::class, 'index']);//'ComicController@index');
         Route::get('comics/{comic}', [ComicController::class, 'show']);//'ComicController@show');
+        Route::get('comics/{comic}/transactions', [ComicController::class, 'showTransactions']);//'ComicController@show');
         Route::post('comic', [ComicController::class, 'store']);//'ComicController@store');
         Route::patch('comic/{comic}', [ComicController::class, 'update']);//'ComicController@update');
         Route::delete('comic/{comic}', [ComicController::class, 'destroy']);//'ComicController@destroy');

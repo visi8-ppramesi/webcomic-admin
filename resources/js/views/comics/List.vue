@@ -30,6 +30,12 @@
         </template>
       </el-table-column>
 
+      <el-table-column min-width="180px" align="center" label="Tokens Spent">
+        <template slot-scope="{row}">
+          <span class="link-type" @click="openTransactionsModal(row.id)">{{ row.total_tokens }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column width="180px" align="center" label="Authors">
         <template slot-scope="scope">
           <span>{{ scope.row.authors }}</span>
@@ -81,6 +87,9 @@
 <script>
 import Pagination from '@/components/Pagination'; // Secondary package based on el-pagination
 import Resource from '@/api/resource';
+// import { fetchTransactions } from '@/api/comic';
+import TokenResource from '@/api/tokenTransaction';
+const tokenResource = new TokenResource();
 const comicResource = new Resource('comics');
 
 export default {
@@ -113,12 +122,41 @@ export default {
         paginate: 20,
         with: 'authors',
       },
+      tokenTransactionQuery: {
+        limit: 20,
+        paginate: 20,
+        with: ['user', 'transactionable'],
+        // sort_by_desc: 'created_at',
+        transactions_where_type: 'purchase_comic',
+      },
+      tokenTransactionCurrentPage: 1,
+      tokenTransactions: [],
+      tokenCount: 0,
+      tokenLoadMoreEnabled: true,
     };
   },
   created() {
     this.getList();
   },
   methods: {
+    async getTokenTransactions(id){
+      this.tokenTransactionQuery.transactions_belong_to_comic = id;
+      this.tokenTransactionQuery.page = this.tokenTransactionCurrentPage;
+      const { data } = await tokenResource.list(this.tokenTransactionQuery);
+      if (this.tokenTransactions.length > 0){
+        this.tokenTransactions = this.tokenTransactions.concat(data.items);
+      } else {
+        this.tokenTransactions = data.items;
+        this.tokenCount = data.total;
+      }
+      if (this.tokenCount <= this.tokenTransactions.length){
+        this.tokenLoadMoreEnabled = false;
+      }
+      return data;
+    },
+    openTransactionsModal(id){
+      this.getTokenTransactions(id);
+    },
     deleteItem(id){
       comicResource.destroy(id)
         .then((response) => {
@@ -158,5 +196,9 @@ export default {
   position: absolute;
   right: 15px;
   top: 10px;
+}
+.fake-link{
+  color: rgb(51, 122, 183);
+  cursor: pointer;
 }
 </style>

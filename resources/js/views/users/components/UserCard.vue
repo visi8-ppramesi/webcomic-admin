@@ -22,22 +22,46 @@
           </el-table-column>
         </el-table>
       </div>
-      <div class="user-follow">
-        <el-button type="primary" style="width: 100%;">
-          Follow
+      <div v-if="!isTokenConsistent" class="user-follow">
+        <el-button type="primary" style="width: 100%;" @click="rectifyUserTokens">
+          Rectify User Tokens
+        </el-button>
+      </div>
+      <div v-else class="user-follow">
+        <el-button type="primary" style="width: 100%;" @click="openGrantTokenModal">
+          Grant Tokens
         </el-button>
       </div>
     </div>
+    <el-dialog
+      :title="'Grant tokens to ' + user.name"
+      :visible.sync="dialogVisible"
+      width="30%"
+      :before-close="handleClose"
+    >
+      <span>Enter token amount to grant:</span>
+      <el-input-number v-model="tokenToGrant" :min="1" />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="grantToken">Confirm</el-button>
+      </span>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
 import PanThumb from '@/components/PanThumb';
 import _ from 'lodash';
+import UserResource from '@/api/user';
+const userResource = new UserResource();
 
 export default {
   components: { PanThumb },
   props: {
+    isTokenConsistent: {
+      type: Boolean,
+      default: true,
+    },
     user: {
       type: Object,
       default: () => {
@@ -52,6 +76,8 @@ export default {
   },
   data() {
     return {
+      tokenToGrant: 1,
+      dialogVisible: false,
       social: [
       ],
       fields: [
@@ -76,6 +102,7 @@ export default {
     },
   },
   created(){
+    console.log(this.isTokenConsistent);
     // this.social = [];
     // Object.keys(this.user).forEach((el) => {
     //   this.social.push({
@@ -85,6 +112,68 @@ export default {
     // });
   },
   methods: {
+    handleClose(){
+      this.tokenToGrant = 1;
+    },
+    grantToken(){
+      if (this.tokenToGrant < 1){
+        this.$message({
+          type: 'error',
+          message: 'What the fuck are you doing? You can\'t grant less than 1 token to user?!?!',
+        });
+        return;
+      }
+      userResource.grantToken(this.user.id, this.tokenToGrant)
+        .then((response) => {
+          this.dialogVisible = false;
+          this.$emit('userUpdate');
+          this.$message({
+            type: 'success',
+            message: 'Token granted!',
+          });
+        })
+        .catch((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Something went wrong: ' + err,
+          });
+        });
+    },
+    openGrantTokenModal(){
+      this.dialogVisible = true;
+    },
+    rectifyUserTokens(){
+      this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      }).then(() => {
+        userResource.rectifyBalance(this.user.id)
+          .then((response) => {
+            this.$emit('userUpdate');
+            this.$message({
+              type: 'success',
+              message: 'Balance rectified',
+            });
+          })
+          .catch((err) => {
+            this.$message({
+              type: 'error',
+              message: 'Something went wrong: ' + err,
+            });
+          });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: 'Canceled',
+        });
+      });
+
+      // userResource.rectifyBalance(this.user.id)
+      //   .then((response) => {
+      //     //  do something
+      //   });
+    },
     getRole() {
       const roles = this.user.roles.map(value => this.$options.filters.uppercaseFirst(value));
       return roles.join(' | ');
