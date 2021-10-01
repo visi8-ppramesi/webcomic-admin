@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class TokenTransactionController extends Controller
 {
+    public function getTotalTokens(){
+        $comic = TokenTransaction::pipe();
+        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
+            $comic = $comic->getCollection();
+        }
+        return response()->json(new JsonResponse([
+            'total' => $comic->sum('token_amount')
+        ]));
+    }
+
     /**
      * Display a listing of the resource.
      *

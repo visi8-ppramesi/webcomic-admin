@@ -40,6 +40,28 @@ class DataController extends Controller
         return $retVal;
     }
 
+    public function getRawTransactionData(){
+        $begin = request()->filled('where_created_after') ? Carbon::parse(request('where_created_after')) :
+            Carbon::now()->addDays(-7);
+        $end = request()->filled('where_created_before') ? Carbon::parse(request('where_created_before')) :
+            Carbon::now();
+        $transactionBucket = $this->aggregateTransactionData([]);
+        $datesArray = $this->getLengthInDays($begin, $end);
+        $transactionAmounts = [];
+        foreach($datesArray as $key => $dateObj){
+            if(!empty($transactionBucket[$dateObj])){
+                $transactionAmounts[$key] = $transactionBucket[$dateObj];
+            }else{
+                $transactionAmounts[$key] = 0;
+            }
+        }
+
+        return response()->json([
+            'transaction_bucket' => $transactionAmounts,
+            'dates' => $datesArray
+        ], 200);
+    }
+
     public function getDailyTransactionData($startDate = 'today - 7 days', $endDate = 'today'){
         $begin = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);

@@ -97,11 +97,13 @@ Route::namespace('Api')->group(function() {
         Route::delete('page/{page}', [PageController::class, 'destroy']);
 
         Route::get('tokens', [TokenTransactionController::class, 'index']);
+        Route::get('tokens/queriedtotal', [TokenTransactionController::class, 'getTotalTokens']);
         Route::get('tokens/{token}', [TokenTransactionController::class, 'show']);
         Route::post('token', [TokenTransactionController::class, 'store']);
         Route::patch('token/{token}', [TokenTransactionController::class, 'update']);
         Route::delete('token/{token}', [TokenTransactionController::class, 'destroy']);
 
+        Route::get('data/transactions/raw', [DataController::class, 'getRawTransactionData']);
         Route::get('data/transactions/daily/{startDate?}/{endDate?}', [DataController::class, 'getDailyTransactionData']);
         Route::get('data/transactions/user/{userId}/{startDate?}/{endDate?}', [DataController::class, 'getUserTransactionData']);
         Route::get('data/transactions/comic/{comicId}/{startDate?}/{endDate?}', [DataController::class, 'getComicTransactionData']);
