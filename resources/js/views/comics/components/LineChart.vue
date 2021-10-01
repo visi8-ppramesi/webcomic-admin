@@ -59,7 +59,6 @@ export default {
         }
       }, 100);
       window.addEventListener('resize', this.__resizeHandler);
-      this.chart.resize();
     }
 
     // Monitor the sidebar changes
@@ -80,6 +79,10 @@ export default {
     this.chart = null;
   },
   methods: {
+    resize(){
+      console.log('resizing...');
+      this.chart.resize();
+    },
     sidebarResizeHandler(e) {
       if (e.propertyName === 'width') {
         this.__resizeHandler();
@@ -151,6 +154,7 @@ export default {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons');
       this.setOptions(this.chartData);
+      this.resize();
     },
   },
 };

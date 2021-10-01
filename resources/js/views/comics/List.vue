@@ -90,7 +90,7 @@
               placeholder="Pick start date"
               format="yyyy/MM/dd"
               style="width: 150px; margin-left: 8px;"
-              @change="changeDate"
+              @change="changeDate(false)"
             />
             <span> - </span>
             <el-date-picker
@@ -99,7 +99,7 @@
               placeholder="Pick end date"
               format="yyyy/MM/dd"
               style="width: 150px;"
-              @change="changeDate"
+              @change="changeDate(false)"
             />
             <el-input v-model="tokenTransactionQuery.search" placeholder="Search by user" style="width: 150px;" class="filter-item" @keyup.enter.native="getTokenTransactions" />
             <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left: -5px; border-top-left-radius: 0; border-bottom-left-radius: 0;" @click="getTokenTransactions">
@@ -179,7 +179,7 @@
             </el-select>
           </div>
           <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-            <line-chart :chart-data="lineChartData" :dates="dates" />
+            <line-chart ref="lineChart" :chart-data="lineChartData" :dates="dates" />
           </el-row>
         </el-tab-pane>
       </el-tabs>
@@ -275,9 +275,11 @@ export default {
       this.lineChartData.transaction_bucket = transaction_bucket;
     },
     handleTabsClick(tab, event){
-      console.log(tab);
       if (tab.name === 'graph'){
         this.getAggregatedTokenTransactions();
+        this.$nextTick(() => {
+          this.$refs.lineChart.resize();
+        });
       }
     },
     handleClose(){
@@ -289,14 +291,10 @@ export default {
       this.selectedChapters = {};
       this.selectedComic = null;
       this.tokenTransactions = [];
+      this.transactionTabs = 'transactions';
     },
     changeDate(aggregate = false){
-      console.log(this.startDate);
-      console.log(this.endDate);
       if (_.isNull(this.startDate) || _.isNull(this.endDate)){
-        console.log(typeof this.startDate);
-        console.log(typeof this.endDate);
-        console.log('woop');
         return;
       }
 
@@ -335,7 +333,6 @@ export default {
         where_comic_id: id,
       });
       this.selectedChapters = [{ id: null, chapter: null }, ...data.items];
-      console.log(this.selectedChapters);
     },
     openTransactionsModal(id){
       this.selectedComic = id;

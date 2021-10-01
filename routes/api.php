@@ -103,7 +103,7 @@ Route::namespace('Api')->group(function() {
         Route::patch('token/{token}', [TokenTransactionController::class, 'update']);
         Route::delete('token/{token}', [TokenTransactionController::class, 'destroy']);
 
-        Route::get('data/transactions/raw', [DataController::class, 'getRawTransactionData']);
+        Route::get('data/transactions/raw', [DataController::class, 'getTotalTokensTransactionData']);
         Route::get('data/transactions/daily/{startDate?}/{endDate?}', [DataController::class, 'getDailyTransactionData']);
         Route::get('data/transactions/user/{userId}/{startDate?}/{endDate?}', [DataController::class, 'getUserTransactionData']);
         Route::get('data/transactions/comic/{comicId}/{startDate?}/{endDate?}', [DataController::class, 'getComicTransactionData']);

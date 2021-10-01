@@ -16,6 +16,19 @@ use Illuminate\Http\Request;
 
 class DataController extends Controller
 {
+    private function aggregateTotalTokensTransactionData($pipeThrough){
+        $transactionObject = TokenTransaction::pipe(null, $pipeThrough);
+        $bucketObject = [];
+        $transactionObject->each(function($item, $key)use(&$bucketObject){
+            if(empty($bucketObject[$item->bucket_date])){
+                $bucketObject[$item->bucket_date] = $item->token_amount;
+            }else{
+                $bucketObject[$item->bucket_date] += $item->token_amount;
+            }
+        });
+        return $bucketObject;
+    }
+
     private function aggregateTransactionData($pipeThrough){
         $transactionObject = TokenTransaction::pipe(null, $pipeThrough);
         $bucketObject = [];
@@ -33,19 +46,19 @@ class DataController extends Controller
         $retVal = [];
         $len = (int)round(abs($end->timestamp - $start->timestamp) / (24 * 60 * 60));
         for($x = 0; $x < $len; $x++){
-            $date = Carbon::parse($start)->addDays($x)->format('d-m-Y');
+            $date = Carbon::parse($start)->tz('Asia/Jakarta')->addDays($x)->format('d-m-Y');
             $retVal[] = $date;
         }
 
         return $retVal;
     }
 
-    public function getRawTransactionData(){
-        $begin = request()->filled('where_created_after') ? Carbon::parse(request('where_created_after')) :
-            Carbon::now()->addDays(-7);
-        $end = request()->filled('where_created_before') ? Carbon::parse(request('where_created_before')) :
-            Carbon::now();
-        $transactionBucket = $this->aggregateTransactionData([]);
+    public function getTotalTokensTransactionData(){
+        $begin = request()->filled('where_created_after') ? Carbon::parse(request('where_created_after'))->tz('Asia/Jakarta') :
+            Carbon::now()->tz('Asia/Jakarta')->addDays(-7);
+        $end = request()->filled('where_created_before') ? Carbon::parse(request('where_created_before'))->tz('Asia/Jakarta') :
+            Carbon::now()->tz('Asia/Jakarta');
+        $transactionBucket = $this->aggregateTotalTokensTransactionData([]);
         $datesArray = $this->getLengthInDays($begin, $end);
         $transactionAmounts = [];
         foreach($datesArray as $key => $dateObj){
@@ -63,8 +76,8 @@ class DataController extends Controller
     }
 
     public function getDailyTransactionData($startDate = 'today - 7 days', $endDate = 'today'){
-        $begin = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
+        $begin = Carbon::parse($startDate)->tz('Asia/Jakarta');
+        $end = Carbon::parse($endDate)->tz('Asia/Jakarta');
 
         $purchaseTokenPipe = [
             WhereCreatedAfter::class => $begin,
@@ -105,8 +118,8 @@ class DataController extends Controller
     }
 
     public function getUserTransactionData($userId, $startDate = 'today - 7 days', $endDate = 'today'){
-        $begin = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
+        $begin = Carbon::parse($startDate)->tz('Asia/Jakarta');
+        $end = Carbon::parse($endDate)->tz('Asia/Jakarta');
         $purchaseComicPipe = [
             WhereCreatedAfter::class => $begin,
             WhereCreatedBefore::class => $end,
@@ -149,8 +162,8 @@ class DataController extends Controller
 
     public function getComicTransactionData($comicId, $startDate = 'today - 7 days', $endDate = 'today'){
         $chapters = Comic::with('chapters')->find($comicId)->chapters->pluck('id')->toArray();
-        $begin = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
+        $begin = Carbon::parse($startDate)->tz('Asia/Jakarta');
+        $end = Carbon::parse($endDate)->tz('Asia/Jakarta');
         $purchaseTokenPipe = [
             WhereCreatedAfter::class => $begin,
             WhereCreatedBefore::class => $end,
@@ -178,8 +191,8 @@ class DataController extends Controller
     }
 
     public function getChapterTransactionData($chapterId, $startDate = 'today - 7 days', $endDate = 'today'){
-        $begin = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
+        $begin = Carbon::parse($startDate)->tz('Asia/Jakarta');
+        $end = Carbon::parse($endDate)->tz('Asia/Jakarta');
         $purchaseTokenPipe = [
             WhereCreatedAfter::class => $begin,
             WhereCreatedBefore::class => $end,
