@@ -48,19 +48,19 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Release Date">
+      <el-table-column width="120px" align="center" label="Release Date">
         <template slot-scope="scope">
           <span>{{ scope.row.release_date | dateFormatter }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Created At">
+      <el-table-column width="120px" align="center" label="Created At">
         <template slot-scope="scope">
           <span>{{ scope.row.created_at | dateFormatter }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Status">
+      <el-table-column width="100px" align="center" label="Status">
         <template slot-scope="scope">
           <span>{{ scope.row.is_draft ? 'Draft' : 'Published' }}</span>
         </template>
@@ -80,6 +80,68 @@
       </el-table-column>
     </el-table>
 
+    <el-dialog width="90%" :visible.sync="dialogVisible" title="Tokens Spent" :before-close="handleClose">
+      <div style="margin-bottom:16px;">
+        <el-date-picker
+          v-model="startDate"
+          type="date"
+          placeholder="Pick start date"
+          format="yyyy/MM/dd"
+          style="width: 150px; margin-left: 8px;"
+          @change="changeDate"
+        />
+        <span> - </span>
+        <el-date-picker
+          v-model="endDate"
+          type="date"
+          placeholder="Pick end date"
+          format="yyyy/MM/dd"
+          style="width: 150px;"
+          @change="changeDate"
+        />
+        <el-input v-model="tokenTransactionQuery.search" placeholder="Search by user" style="width: 150px;" class="filter-item" @keyup.enter.native="getTokenTransactions" />
+        <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left: -5px; border-top-left-radius: 0; border-bottom-left-radius: 0;" @click="getTokenTransactions">
+          {{ $t('table.search') }}
+        </el-button>
+        <el-select v-model="tokenTransactionQuery.transactions_where_chapter" placeholder="Select chapter" @change="getTokenTransactions">
+          <el-option
+            v-for="item in selectedChapters"
+            :key="item.id"
+            :label="item.chapter"
+            :value="item.id"
+          />
+        </el-select>
+      </div>
+      <el-table :data="tokenTransactions" border fit highlight-current-row style="width: 100%">
+        <el-table-column label="ID">
+          <template slot-scope="scope">
+            <span>{{ scope.row.id }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Name">
+          <template slot-scope="scope">
+            <span>{{ scope.row.user.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Date">
+          <template slot-scope="scope">
+            <span>{{ scope.row.created_at | dateFormatter }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Chapter">
+          <template slot-scope="scope">
+            <span>{{ scope.row.transactionable.chapter }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Amount">
+          <template slot-scope="scope">
+            <span>{{ scope.row.token_amount }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="tokenCount>0" :total="tokenCount" :page.sync="tokenTransactionQuery.page" :limit.sync="tokenTransactionQuery.limit" @pagination="getTokenTransactions" />
+    </el-dialog>
+
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
   </div>
 </template>
@@ -89,8 +151,11 @@ import Pagination from '@/components/Pagination'; // Secondary package based on 
 import Resource from '@/api/resource';
 // import { fetchTransactions } from '@/api/comic';
 import TokenResource from '@/api/tokenTransaction';
+import _ from 'lodash';
+// import dayjs from 'dayjs';
 const tokenResource = new TokenResource();
 const comicResource = new Resource('comics');
+const chapterResource = new Resource('chapters');
 
 export default {
   name: 'ArticleList',
@@ -110,6 +175,11 @@ export default {
   },
   data() {
     return {
+      dialogVisible: false,
+      // endDate: dayjs().format('YYYY-MM-DD'),
+      // startDate: dayjs().add(-7, 'day').format('YYYY-MM-DD'),
+      endDate: null,
+      startDate: null,
       query: {
         keyword: '',
       },
@@ -123,39 +193,84 @@ export default {
         with: 'authors',
       },
       tokenTransactionQuery: {
+        page: 1,
         limit: 20,
         paginate: 20,
         with: ['user', 'transactionable'],
         // sort_by_desc: 'created_at',
         transactions_where_type: 'purchase_comic',
+        where_created_after: null,
+        where_created_before: null,
+        search: null,
+        transactions_where_chapter: null,
       },
       tokenTransactionCurrentPage: 1,
       tokenTransactions: [],
       tokenCount: 0,
       tokenLoadMoreEnabled: true,
+      selectedComic: null,
+      selectedChapters: {},
     };
   },
   created() {
     this.getList();
   },
   methods: {
-    async getTokenTransactions(id){
-      this.tokenTransactionQuery.transactions_belong_to_comic = id;
-      this.tokenTransactionQuery.page = this.tokenTransactionCurrentPage;
+    handleClose(){
+      this.tokenTransactionQuery.where_created_after = null;
+      this.tokenTransactionQuery.where_created_before = null;
+      this.tokenTransactionQuery.search = null;
+      this.tokenTransactionQuery.transactions_where_chapter = null;
+      this.dialogVisible = false;
+      this.selectedChapters = {};
+      this.selectedComic = null;
+      this.tokenTransactions = [];
+    },
+    changeDate(){
+      console.log(this.startDate);
+      console.log(this.endDate);
+      if (_.isNull(this.startDate) || _.isNull(this.endDate)){
+        console.log(typeof this.startDate);
+        console.log(typeof this.endDate);
+        console.log('woop');
+        return;
+      }
+      console.log('asdfasdf');
+
+      this.tokenTransactionQuery.where_created_after = this.startDate;
+      this.tokenTransactionQuery.where_created_before = this.endDate;
+      this.getTokenTransactions();
+    },
+    async getTokenTransactions(){
+      this.tokenTransactionQuery.transactions_belong_to_comic = this.selectedComic;
+      // this.tokenTransactionQuery.page = this.tokenTransactionCurrentPage;
       const { data } = await tokenResource.list(this.tokenTransactionQuery);
-      if (this.tokenTransactions.length > 0){
-        this.tokenTransactions = this.tokenTransactions.concat(data.items);
-      } else {
-        this.tokenTransactions = data.items;
-        this.tokenCount = data.total;
-      }
-      if (this.tokenCount <= this.tokenTransactions.length){
-        this.tokenLoadMoreEnabled = false;
-      }
+      this.tokenTransactions = data.items;
+      this.tokenCount = data.total;
+      // if (this.tokenTransactions.length > 0){
+      //   this.tokenTransactions = this.tokenTransactions.concat(data.items);
+      // } else {
+      //   this.tokenTransactions = data.items;
+      //   this.tokenCount = data.total;
+      // }
+      // if (this.tokenCount <= this.tokenTransactions.length){
+      //   this.tokenLoadMoreEnabled = false;
+      // }
       return data;
     },
+    async getChapters(id){
+      const { data } = await chapterResource.list({
+        select: ['id', 'chapter'],
+        where_comic_id: id,
+      });
+      this.selectedChapters = [{ id: null, chapter: null }, ...data.items];
+      console.log(this.selectedChapters);
+    },
     openTransactionsModal(id){
-      this.getTokenTransactions(id);
+      this.selectedComic = id;
+      this.getTokenTransactions();
+      this.getChapters(id);
+      this.dialogVisible = true;
     },
     deleteItem(id){
       comicResource.destroy(id)
@@ -200,5 +315,14 @@ export default {
 .fake-link{
   color: rgb(51, 122, 183);
   cursor: pointer;
+}
+</style>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+.filter-item{
+  input{
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 }
 </style>

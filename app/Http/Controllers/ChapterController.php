@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Laravue\JsonResponse;
 use App\Models\Chapter;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,15 @@ class ChapterController extends Controller
      */
     public function index()
     {
-        return response()->json(Chapter::pipe(), 200);
+        $chapters = Chapter::pipe();
+        if(get_parent_class($chapters) === 'Illuminate\Pagination\AbstractPaginator'){
+            $chapters = $chapters->getCollection();
+        }
+
+        return response()->json(new JsonResponse([
+            'items' => $chapters,
+            'total' => Chapter::pipeCount()
+        ]));
     }
 
     /**

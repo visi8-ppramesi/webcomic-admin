@@ -23,7 +23,7 @@
       <el-table-column width="180px" align="center" label="Comment">
         <template slot-scope="scope">
           <!-- <span v-html="scope.row.comment" /> -->
-          <span @click="openComment(scope.row.id)">{{ scope.row.comment | truncate(50, '...') }}</span>
+          <span class="link-type" @click="openComment(scope.row.id)">{{ scope.row.comment | truncate(50, '...') }}</span>
         </template>
       </el-table-column>
 
@@ -58,6 +58,7 @@
     <el-dialog :visible.sync="dialogVisible" title="Comment">
       <comments
         :comment="selectedComment"
+        @closeDialogThenUpdate="closeDialogThenUpdate"
       />
     </el-dialog>
   </div>
@@ -111,6 +112,10 @@ export default {
     this.getList();
   },
   methods: {
+    closeDialogThenUpdate(){
+      this.dialogVisible = false;
+      this.getList();
+    },
     async openComment(id){
       const { data } = await commentResource.get(id);
       this.selectedComment = data;

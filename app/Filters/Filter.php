@@ -11,7 +11,7 @@ abstract class Filter{
 
     public function handle($request, Closure $next){
         $builder = $next($request);
-        if(!request()->has($this->filterName()) && !$this->noParam){
+        if(!request()->filled($this->filterName()) && !$this->noParam){
             return $builder;
         }
         $modelName = get_class($builder->getModel());

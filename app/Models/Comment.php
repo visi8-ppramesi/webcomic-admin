@@ -8,6 +8,8 @@ use App\Filters\Get;
 use App\Filters\Limit;
 use App\Filters\Search;
 use App\Filters\WhereCommenterId;
+use App\Filters\WhereCreatedAfter;
+use App\Filters\WhereCreatedBefore;
 use App\Filters\WhereUserId;
 use App\Filters\With;
 use App\Traits\Pipeable;
@@ -25,6 +27,8 @@ class Comment extends laraComment
             CommentParentless::class,
             CommentWithChildren::class,
             WhereCommenterId::class,
+            WhereCreatedAfter::class,
+            WhereCreatedBefore::class,
             Limit::class,
             Search::class,
         ];

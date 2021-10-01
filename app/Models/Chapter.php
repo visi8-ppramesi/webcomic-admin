@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Filters\Get;
+use App\Filters\Select;
+use App\Filters\WhereComicId;
 use App\Traits\Pipeable;
 use Illuminate\Database\Eloquent\Model;
 use tizis\laraComments\Contracts\ICommentable;
@@ -12,6 +15,15 @@ class Chapter extends Model implements ICommentable
     use Commentable;
     use Pipeable;
     protected $guarded = [];
+
+    protected function pipeable(){
+        return [
+            Get::class,
+            WhereComicId::class,
+            Select::class,
+        ];
+    }
+
     public function comic(){
         return $this->belongsTo(Comic::class);
     }

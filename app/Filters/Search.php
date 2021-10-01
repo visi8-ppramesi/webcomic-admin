@@ -18,6 +18,9 @@ class Search extends Filter{
         ],
         "App\Models\Comment" => [
             'comment', ['commenter' => 'name'], ['commenter' => 'email']
+        ],
+        "App\Models\TokenTransaction" => [
+            ['user' => 'name'], ['user' => 'email']
         ]
     ];
     protected function applyFilter($builder){
