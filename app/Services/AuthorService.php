@@ -35,12 +35,16 @@ class AuthorService extends Service{
     }
 
     public function create(){
-        $this->saveProfilePicture($this->data['profile_picture_url']);
+        if(self::checkFileType($this->data['profile_picture_url']) == 'data_uri'){
+            $this->saveProfilePicture($this->data['profile_picture_url']);
+        }
         parent::create();
     }
 
     public function update(){
-        $this->saveProfilePicture($this->data['profile_picture_url']);
+        if(self::checkFileType($this->data['profile_picture_url']) == 'data_uri'){
+            $this->saveProfilePicture($this->data['profile_picture_url']);
+        }
         parent::update();
     }
 }

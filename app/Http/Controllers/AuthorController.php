@@ -103,6 +103,7 @@ class AuthorController extends Controller
             'user_id' => ['integer', 'required']
         ]);
         $authorService->setData($request->all());
+        $authorService->setRecord($author);
         $retval = $authorService->update();
         return response()->json($retval, 200);
 
