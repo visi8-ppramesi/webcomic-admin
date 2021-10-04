@@ -151,15 +151,15 @@ class User extends Authenticatable
         //create token transaction first
         $itemsPrices = [];
         $tokenAmount = 0;
-        $chapter = Chapter::where('id', $chapter)->first();
+        $chapterObj = Chapter::where('id', $chapter)->first();
 
-        $itemsPrices[$chapter->id] = $chapter->token_price;
-        $tokenAmount += $chapter->token_price;
+        $itemsPrices[$chapter] = $chapterObj->token_price;
+        $tokenAmount += $chapterObj->token_price;
         // $chapter->map(function($item)use(&$itemsPrices, &$tokenAmount){
         //     $itemsPrices[$item->id] = $item->token_price;
         //     $tokenAmount += $item->token_price;
         // });
-        $authors = $chapter->comic->authors->pluck('id');
+        $authors = $chapterObj->comic->authors->pluck('id');
         $currentToken = $this->total_tokens - $tokenAmount;
         if($this->checkChapterPurchased($chapter)){
             return -1;
@@ -169,13 +169,18 @@ class User extends Authenticatable
         }
         $date = !empty($date) ? \Carbon\Carbon::parse($date) : \Carbon\Carbon::now();
 
-        $split = 1 / $authors->count();
+        try{
+            $split = 1 / $authors->count();//we should probably take care of this in the future just in case there's different split
+            $splitObj = $authors->mapWithKeys(function($v)use($split){return [$v => $split];})->all();
+        }catch(\Exception $e){
+            $splitObj = [];
+        }
         $descriptor = [
-            'date' => \Carbon\Carbon::now(),
+            'date' => $date,
             'type' => 'purchase_comic',
             'items' => $chapter,
             'item_prices' => $itemsPrices,
-            'author_split' => $authors->mapWithKeys(function($v)use($split){return [$v => $split];})->all()
+            'author_split' => $splitObj
         ];
 
         $transaction = TokenTransaction::create([
