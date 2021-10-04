@@ -3,12 +3,14 @@ namespace App\Traits;
 
 use App\Filters\Count;
 use App\Filters\Get;
+use App\Filters\With;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Str;
 
 trait Pipeable{
     protected $pipeableThrough = [
-        Get::class
+        Get::class,
+        With::class,
     ];
 
     public function pipeable(){

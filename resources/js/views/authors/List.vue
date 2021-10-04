@@ -22,6 +22,12 @@
         </template>
       </el-table-column>
 
+      <el-table-column min-width="180px" align="center" label="Tokens Received">
+        <template slot-scope="{row}">
+          <span class="link-type" @click="openTransactionsModal(row.id)">{{ Math.floor(row.total_tokens) }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column width="180px" align="center" label="Email">
         <template slot-scope="scope">
           <span>{{ scope.row.email }}</span>
@@ -72,6 +78,7 @@ export default {
         page: 1,
         limit: 20,
         paginate: 20,
+        with: 'tokenTransactions',
       },
     };
   },
@@ -79,6 +86,9 @@ export default {
     this.getList();
   },
   methods: {
+    openTransactionsModal(){
+
+    },
     deleteItem(id){
       authorResource.destroy(id)
         .then((response) => {

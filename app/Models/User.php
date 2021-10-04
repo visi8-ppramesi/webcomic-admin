@@ -147,14 +147,19 @@ class User extends Authenticatable
         return Comic::whereIn('id', $purchasedId)->get();
     }
 
-    public function purchaseChapter($comicId, $chapter, $ar = false){//to be called after sucessful payment
+    public function purchaseChapter($comicId, $chapter, $ar = false, $date = null){//to be called after sucessful payment
         //create token transaction first
         $itemsPrices = [];
         $tokenAmount = 0;
-        Chapter::where('id', $chapter)->get()->map(function($item)use(&$itemsPrices, &$tokenAmount){
-            $itemsPrices[$item->id] = $item->token_price;
-            $tokenAmount += $item->token_price;
-        });
+        $chapter = Chapter::where('id', $chapter)->first();
+
+        $itemsPrices[$chapter->id] = $chapter->token_price;
+        $tokenAmount += $chapter->token_price;
+        // $chapter->map(function($item)use(&$itemsPrices, &$tokenAmount){
+        //     $itemsPrices[$item->id] = $item->token_price;
+        //     $tokenAmount += $item->token_price;
+        // });
+        $authors = $chapter->comic->authors->pluck('id');
         $currentToken = $this->total_tokens - $tokenAmount;
         if($this->checkChapterPurchased($chapter)){
             return -1;
@@ -162,12 +167,15 @@ class User extends Authenticatable
         if($currentToken <= 0){
             return 0;
         }
+        $date = !empty($date) ? \Carbon\Carbon::parse($date) : \Carbon\Carbon::now();
 
+        $split = 1 / $authors->count();
         $descriptor = [
             'date' => \Carbon\Carbon::now(),
             'type' => 'purchase_comic',
             'items' => $chapter,
-            'item_prices' => $itemsPrices
+            'item_prices' => $itemsPrices,
+            'author_split' => $authors->mapWithKeys(function($v)use($split){return [$v => $split];})->all()
         ];
 
         $transaction = TokenTransaction::create([
@@ -175,8 +183,11 @@ class User extends Authenticatable
             'transactionable_id' => $chapter,
             'user_id' => $this->id,
             'token_amount' => $tokenAmount,
-            'descriptor' => json_encode($descriptor)
+            'descriptor' => json_encode($descriptor),
+            'created_at' => $date,
         ]);
+
+        $transaction->authors()->sync($authors);
 
         //then add comic to purchased list
         $comicObj = Comic::findOrFail($comicId);
@@ -195,7 +206,7 @@ class User extends Authenticatable
                 // 'price' => $comicObj->price,
                 'ar' => $arArr,
                 'id' => $comicId,
-                'date' => now(),
+                'date' => $date,
                 'chapters' => $currentChapter,
                 'transactions' => $transactions
             ];
@@ -205,7 +216,7 @@ class User extends Authenticatable
                 // 'price' => $comicObj->price,
                 'ar' => $arArr,
                 'id' => $comicId,
-                'date' => now(),
+                'date' => $date,
                 'chapters' => [$chapter],
                 'transactions' => [$transaction->id]
             ];
@@ -316,7 +327,7 @@ class User extends Authenticatable
         return !empty($bookmark[$comicId]) ? $bookmark[$comicId] : null;
     }
 
-    public function purchaseToken($tokenAmount, $moneyValue, $paymentType){
+    public function purchaseToken($tokenAmount, $moneyValue, $paymentType, $date = null){
         /*
             descriptor object structure
             {
@@ -326,8 +337,9 @@ class User extends Authenticatable
                 money_value: money value
             }
         */
+        $date = !empty($date) ? \Carbon\Carbon::parse($date) : \Carbon\Carbon::now();
         $descriptor = [
-            'date' => \Carbon\Carbon::now(),
+            'date' => $date,
             'type' => 'purchase_token',
             'payment_type' => $paymentType,
             'money_value' => $moneyValue
@@ -335,7 +347,8 @@ class User extends Authenticatable
         TokenTransaction::create([
             'user_id' => $this->id,
             'token_amount' => $tokenAmount,
-            'descriptor' => json_encode($descriptor)
+            'descriptor' => json_encode($descriptor),
+            'created_at' => $date
         ]);
         $this->total_tokens += $tokenAmount;
         return $this->save();

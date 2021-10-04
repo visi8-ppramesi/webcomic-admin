@@ -17,12 +17,22 @@ class AuthorController extends Controller
      */
     public function index()
     {
-        $author = Author::pipe();
-        if(get_parent_class($author) === 'Illuminate\Pagination\AbstractPaginator'){
-            $author = $author->getCollection();
+        $authors = Author::pipe();
+        if(get_parent_class($authors) === 'Illuminate\Pagination\AbstractPaginator'){
+            $authors = $authors->getCollection();
+        }
+        if(request()->filled('with')){
+            foreach($authors as $idx => $author){
+                $myId = $author->id;
+                $authors[$idx]['total_tokens'] = $author->tokenTransactions->reduce(function($carry, $item)use($myId){
+                    $descriptor = json_decode($item->descriptor, true);
+                    return $carry + (float)($item->token_amount * $descriptor['author_split'][$myId]);
+                }, 0.0);
+                unset($authors[$idx]->tokenTransactions);
+            }
         }
         return response()->json(new JsonResponse([
-            'items' => $author,
+            'items' => $authors,
             'total' => Author::pipeCount()
         ]));
     }
