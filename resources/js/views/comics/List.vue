@@ -80,7 +80,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog width="90%" :visible.sync="dialogVisible" title="Tokens Spent" :before-close="handleClose">
+    <!-- <el-dialog width="90%" :visible.sync="dialogVisible" title="Tokens Spent" :before-close="handleClose">
       <el-tabs v-model="transactionTabs" @tab-click="handleTabsClick">
         <el-tab-pane label="Token Transactions" name="transactions">
           <div style="margin-bottom:16px;">
@@ -183,8 +183,8 @@
           </el-row>
         </el-tab-pane>
       </el-tabs>
-
-    </el-dialog>
+    </el-dialog> -->
+    <token-dialog ref="transactionsDialog" :visible="dialogVisible" />
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
   </div>
@@ -195,7 +195,8 @@ import Pagination from '@/components/Pagination'; // Secondary package based on 
 import Resource from '@/api/resource';
 // import { fetchTransactions } from '@/api/comic';
 import TokenResource from '@/api/tokenTransaction';
-import LineChart from './components/LineChart';
+// import LineChart from './components/LineChart';
+import TokenDialog from './components/TokenDialog';
 import { fetchRawTransactions } from '@/api/data';
 import _ from 'lodash';
 // import dayjs from 'dayjs';
@@ -205,7 +206,7 @@ const chapterResource = new Resource('chapters');
 
 export default {
   name: 'ArticleList',
-  components: { Pagination, LineChart },
+  components: { Pagination, TokenDialog },
   filters: {
     dateFormatter(date) {
       return (new Date(date)).toLocaleDateString('id-ID');
@@ -334,11 +335,21 @@ export default {
       });
       this.selectedChapters = [{ id: null, chapter: null }, ...data.items];
     },
-    openTransactionsModal(id){
+    async openTransactionsModal(id){
       this.selectedComic = id;
-      this.getTokenTransactions();
-      this.getChapters(id);
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)',
+      });
+      // await this.getTokenTransactions();
+      // await this.getChapters(id);
+      this.$refs.transactionsDialog.openDialog(this.selectedComic, {
+        transactions_belong_to_comic: this.selectedComic,
+      });
       this.dialogVisible = true;
+      loading.close();
     },
     deleteItem(id){
       comicResource.destroy(id)

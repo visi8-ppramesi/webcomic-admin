@@ -7,6 +7,7 @@ use App\Filters\Limit;
 use App\Filters\Search;
 use App\Filters\SortByAsc;
 use App\Filters\SortByDesc;
+use App\Filters\TransactionsBelongToAuthor;
 use App\Filters\TransactionsBelongToComic;
 use App\Filters\TransactionsWhereChapter;
 use App\Filters\TransactionsWhereType;
@@ -32,6 +33,7 @@ class TokenTransaction extends Model
             TransactionsWhereChapter::class,
             TransactionsWhereType::class,
             TransactionsBelongToComic::class,
+            TransactionsBelongToAuthor::class,
             WhereNotNull::class,
             WhereNull::class,
             WhereTransactionableId::class,

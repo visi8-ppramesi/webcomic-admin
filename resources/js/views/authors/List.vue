@@ -61,6 +61,9 @@
 <script>
 import Pagination from '@/components/Pagination'; // Secondary package based on el-pagination
 import Resource from '@/api/resource';
+import _ from 'lodash';
+import TokenResource from '@/api/tokenTransaction';
+const tokenResource = new TokenResource();
 const authorResource = new Resource('authors');
 
 export default {
@@ -68,6 +71,7 @@ export default {
   components: { Pagination },
   data() {
     return {
+      selectedAuthor: null,
       query: {
         keyword: '',
       },
@@ -80,14 +84,39 @@ export default {
         paginate: 20,
         with: 'tokenTransactions',
       },
+      tokenTransactionQuery: {
+        page: 1,
+        limit: 20,
+        paginate: 20,
+        with: ['user', 'transactionable'],
+        // sort_by_desc: 'created_at',
+        transactions_where_type: 'purchase_comic',
+        where_created_after: null,
+        where_created_before: null,
+        search: null,
+        transactions_where_chapter: null,
+        sort_by_desc: 'created_at',
+      },
     };
   },
   created() {
     this.getList();
   },
   methods: {
-    openTransactionsModal(){
-
+    async getTokenTransactions(withTotal = true){
+      this.tokenTransactionQuery.transactions_belong_to_author = this.selectedAuthor;
+      const { data } = await tokenResource.list(this.tokenTransactionQuery);
+      this.tokenTransactions = data.items;
+      this.tokenCount = data.total;
+      if (withTotal){
+        const totalData = await tokenResource.queriedTotalTokensSpent(_.omit(this.tokenTransactionQuery, ['page', 'limit', 'paginate', 'with']));
+        this.queriedTotalTokens = totalData.data.total;
+      }
+      return data;
+    },
+    async openTransactionsModal(id){
+      this.selectedAuthor = id;
+      await this.getTokenTransactions();
     },
     deleteItem(id){
       authorResource.destroy(id)
