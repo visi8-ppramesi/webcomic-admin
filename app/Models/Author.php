@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Filters\Get;
+use App\Filters\Limit;
+use App\Filters\Search;
+use App\Filters\With;
 use App\Traits\Pipeable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,6 +13,16 @@ class Author extends Model
 {
     use Pipeable;
     protected $guarded = [];
+
+    public function pipeable(){
+        return [
+            Get::class,
+            With::class,
+            Limit::class,
+            Search::class,
+        ];
+    }
+
     public function comics(){
         return $this->belongsToMany(Comic::class);
     }

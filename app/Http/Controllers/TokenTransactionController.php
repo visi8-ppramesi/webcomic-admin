@@ -9,12 +9,13 @@ use Illuminate\Http\Request;
 class TokenTransactionController extends Controller
 {
     public function getTotalTokens(){
-        $comic = TokenTransaction::pipe();
-        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
-            $comic = $comic->getCollection();
+        $transactions = TokenTransaction::pipe();
+        if(get_parent_class($transactions) === 'Illuminate\Pagination\AbstractPaginator'){
+            $transactions = $transactions->getCollection();
         }
+
         return response()->json(new JsonResponse([
-            'total' => $comic->sum('token_amount')
+            'total' => $transactions->sum('token_amount')
         ]));
     }
 
@@ -25,12 +26,13 @@ class TokenTransactionController extends Controller
      */
     public function index()
     {
-        $comic = TokenTransaction::pipe();
-        if(get_parent_class($comic) === 'Illuminate\Pagination\AbstractPaginator'){
-            $comic = $comic->getCollection();
+        $transactions = TokenTransaction::pipe();
+        if(get_parent_class($transactions) === 'Illuminate\Pagination\AbstractPaginator'){
+            $transactions = $transactions->getCollection();
         }
+
         return response()->json(new JsonResponse([
-            'items' => $comic,
+            'items' => $transactions,
             'total' => TokenTransaction::pipeCount()
         ]));
     }

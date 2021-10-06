@@ -6,6 +6,8 @@ use App\Models\Comic;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Validation\Rule;
 use \App\Laravue\JsonResponse;
+use App\Models\Chapter;
+use App\Models\TokenTransaction;
 use App\Rules\ComicChapter;
 use App\Services\ComicService;
 
@@ -22,8 +24,20 @@ class ComicController extends Controller
         if(get_parent_class($comics) === 'Illuminate\Pagination\AbstractPaginator'){
             $comics = $comics->getCollection();
         }
+        $ids = $comics->pluck('chapters')[0]->pluck('id')->toArray();
+        $groupTransaction = TokenTransaction::where('transactionable_type', Chapter::class)
+            ->whereIn('transactionable_id', $ids)
+            ->get()
+            ->groupBy('transactionable_id');
         foreach($comics as $idx => $comic){
-            $comics[$idx]['total_tokens'] = $comic->total_tokens;
+            // $comics[$idx]['total_tokens'] = $comic->total_tokens;
+            $comics[$idx]['total_tokens'] = $comic->chapters->reduce(function($acc, $el)use($groupTransaction){
+                if(!empty($groupTransaction[$el->id])){
+                    return $acc + $groupTransaction[$el->id]->sum('token_amount');
+                }else{
+                    return $acc;
+                }
+            }, 0);
         }
         return response()->json(new JsonResponse([
             'items' => $comics,

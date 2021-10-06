@@ -21,6 +21,7 @@ use App\Filters\With;
 use App\Traits\Pipeable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class TokenTransaction extends Model
 {
@@ -63,5 +64,15 @@ class TokenTransaction extends Model
     public function getBucketDateAttribute()
     {
         return Carbon::parse($this->created_at)->format('d-m-Y');
+    }
+
+    public static function getTransactionsWithAuthorShare($authorId){
+        return DB::table('token_transactions')
+            ->select(DB::raw("
+                *,
+                token_transactions.token_amount * JSON_EXTRACT(token_transactions.descriptor, '$.\"author_split\".\"" . $authorId . "\"') as author_share
+            "))->join('author_token_transaction', function ($q) {
+                $q->on('author_token_transaction.token_transaction_id', '=', 'token_transactions.id');
+            })->where('author_token_transaction.author_id', '=', $authorId)->first();
     }
 }

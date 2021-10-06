@@ -171,7 +171,6 @@ export default {
       Object.keys(extraQuery).forEach((el) => {
         this.tokenTransactionQuery[el] = extraQuery[el];
       });
-      await this.getChapters(id);
       await this.getTokenTransactions(true);
       this.visible = true;
     },
@@ -210,15 +209,21 @@ export default {
       }
     },
     async getTokenTransactions(withTotal = true){
-      this.tokenTransactionQuery.transactions_belong_to_author = this.selectedAuthor;
-      const { data } = await tokenResource.list(this.tokenTransactionQuery);
-      this.tokenTransactions = data.items;
-      this.tokenCount = data.total;
+      let innerData;
+      tokenResource.list(this.tokenTransactionQuery)
+        .then(({ data }) => {
+          this.tokenTransactions = data.items;
+          this.tokenCount = data.total;
+          innerData = data;
+        });
+      // const { data } = await tokenResource.list(this.tokenTransactionQuery);
+      // this.tokenTransactions = data.items;
+      // this.tokenCount = data.total;
       if (withTotal){
         const totalData = await tokenResource.queriedTotalTokensSpent(_.omit(this.tokenTransactionQuery, ['page', 'limit', 'paginate', 'with']));
         this.queriedTotalTokens = totalData.data.total;
       }
-      return data;
+      return innerData;
     },
     async getChapters(id){
       const { data } = await chapterResource.list({

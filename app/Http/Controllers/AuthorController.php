@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Rules\SocialMediaObject;
 use App\Services\AuthorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AuthorController extends Controller
 {
@@ -21,13 +22,17 @@ class AuthorController extends Controller
         if(get_parent_class($authors) === 'Illuminate\Pagination\AbstractPaginator'){
             $authors = $authors->getCollection();
         }
-        if(request()->filled('with')){
+        if(request()->filled('with') &&
+            (request('with') == 'tokenTransactions' ||
+                (gettype(request('with') == 'array') && in_array('tokenTransactions', request('with')))
+            )
+        ){
             foreach($authors as $idx => $author){
                 $myId = $author->id;
                 $authors[$idx]['total_tokens'] = $author->tokenTransactions->reduce(function($carry, $item)use($myId){
                     $descriptor = json_decode($item->descriptor, true);
-                    return $carry + (float)($item->token_amount * $descriptor['author_split'][$myId]);
-                }, 0.0);
+                    return $carry + floor($item->token_amount * $descriptor['author_split'][$myId]);
+                }, 0);
                 unset($authors[$idx]->tokenTransactions);
             }
         }

@@ -242,7 +242,7 @@ export default {
         page: 1,
         limit: 20,
         paginate: 20,
-        with: 'authors',
+        with: ['authors', 'chapters'],
       },
       tokenTransactionQuery: {
         page: 1,

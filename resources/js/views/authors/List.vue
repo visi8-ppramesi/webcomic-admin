@@ -127,7 +127,7 @@ export default {
       this.$refs.authorsDialog.openDialog(this.selectedAuthor, {
         transactions_belong_to_author: this.selectedAuthor,
       });
-      await this.getTokenTransactions();
+      // await this.getTokenTransactions();
       this.dialogVisible = true;
       loading.close();
     },
