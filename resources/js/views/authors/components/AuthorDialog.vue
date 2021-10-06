@@ -24,14 +24,6 @@
           <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left: -5px; border-top-left-radius: 0; border-bottom-left-radius: 0;" @click="getTokenTransactions">
             {{ $t('table.search') }}
           </el-button>
-          <el-select v-model="tokenTransactionQuery.transactions_where_chapter" placeholder="Select chapter" @change="getTokenTransactions">
-            <el-option
-              v-for="item in selectedChap"
-              :key="item.id"
-              :label="item.chapter"
-              :value="item.id"
-            />
-          </el-select>
         </div>
         <el-table :data="tokenTransactions" border fit highlight-current-row style="width: 100%">
           <el-table-column label="ID">
@@ -88,14 +80,6 @@
           <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left: -5px; border-top-left-radius: 0; border-bottom-left-radius: 0;" @click="getAggregatedTokenTransactions">
             {{ $t('table.search') }}
           </el-button>
-          <el-select v-model="tokenTransactionQuery.transactions_where_chapter" placeholder="Select chapter" @change="getAggregatedTokenTransactions">
-            <el-option
-              v-for="item in selectedChap"
-              :key="item.id"
-              :label="item.chapter"
-              :value="item.id"
-            />
-          </el-select>
         </div>
         <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
           <line-chart :chart-data="lineChartData" :dates="dates" />
@@ -115,10 +99,10 @@ import { fetchRawTransactions } from '@/api/data';
 import _ from 'lodash';
 // import dayjs from 'dayjs';
 const tokenResource = new TokenResource();
-const comicResource = new Resource('comics');
+const authorResource = new Resource('authors');
 const chapterResource = new Resource('chapters');
 export default {
-  name: 'TokenDialog',
+  name: 'AuthorDialog',
   components: { Pagination, LineChart },
   filters: {
     dateFormatter(date) {
@@ -137,14 +121,6 @@ export default {
     visible: {
       type: Boolean,
       default: false,
-    },
-    dialogTrans: {
-      type: Array,
-      default: () => {},
-    },
-    selectedChap: {
-      type: Object,
-      default: () => {},
     },
   },
   data() {
@@ -185,7 +161,7 @@ export default {
       tokenTransactions: [],
       tokenCount: 0,
       tokenLoadMoreEnabled: true,
-      selectedComic: null,
+      selectedAuthor: null,
       selectedChapters: {},
       queriedTotalTokens: 0,
     };
@@ -216,7 +192,7 @@ export default {
       this.tokenTransactionQuery.search = null;
       this.tokenTransactionQuery.transactions_where_chapter = null;
       this.selectedChapters = {};
-      this.selectedComic = null;
+      this.selectedAuthor = null;
       this.tokenTransactions = [];
       this.transactionTabs = 'transactions';
       this.visible = false;
@@ -234,7 +210,7 @@ export default {
       }
     },
     async getTokenTransactions(withTotal = true){
-      // this.tokenTransactionQuery.transactions_belong_to_comic = this.selectedComic;
+      this.tokenTransactionQuery.transactions_belong_to_author = this.selectedAuthor;
       const { data } = await tokenResource.list(this.tokenTransactionQuery);
       this.tokenTransactions = data.items;
       this.tokenCount = data.total;
@@ -253,7 +229,7 @@ export default {
       console.log(this.selectedChapters);
     },
     deleteItem(id){
-      comicResource.destroy(id)
+      authorResource.destroy(id)
         .then((response) => {
           this.getList();
         });
@@ -263,36 +239,8 @@ export default {
       this.getList();
     },
     handleCreate(){
-      this.$router.push('/comic/create');
+      this.$router.push('/author/create');
     },
   },
 };
 </script>
-
-<style scoped>
-.edit-input {
-  padding-right: 100px;
-}
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
-.fake-link{
-  color: rgb(51, 122, 183);
-  cursor: pointer;
-}
-.total-tokens-query{
-  text-align: end;
-  margin-top: 15px;
-}
-</style>
-
-<style rel="stylesheet/scss" lang="scss" scoped>
-.filter-item{
-  input{
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-}
-</style>

@@ -53,7 +53,7 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <author-dialog ref="authorsDialog" :visible="dialogVisible" />
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
   </div>
 </template>
@@ -63,14 +63,16 @@ import Pagination from '@/components/Pagination'; // Secondary package based on 
 import Resource from '@/api/resource';
 import _ from 'lodash';
 import TokenResource from '@/api/tokenTransaction';
+import AuthorDialog from './components/AuthorDialog';
 const tokenResource = new TokenResource();
 const authorResource = new Resource('authors');
 
 export default {
   name: 'AuthorList',
-  components: { Pagination },
+  components: { Pagination, AuthorDialog },
   data() {
     return {
+      dialogVisible: false,
       selectedAuthor: null,
       query: {
         keyword: '',
@@ -116,7 +118,18 @@ export default {
     },
     async openTransactionsModal(id){
       this.selectedAuthor = id;
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)',
+      });
+      this.$refs.authorsDialog.openDialog(this.selectedAuthor, {
+        transactions_belong_to_author: this.selectedAuthor,
+      });
       await this.getTokenTransactions();
+      this.dialogVisible = true;
+      loading.close();
     },
     deleteItem(id){
       authorResource.destroy(id)
