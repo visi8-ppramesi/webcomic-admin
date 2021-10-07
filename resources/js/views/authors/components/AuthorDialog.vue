@@ -195,6 +195,8 @@ export default {
       this.tokenTransactions = [];
       this.transactionTabs = 'transactions';
       this.visible = false;
+      this.startDate = null;
+      this.endDate = null;
     },
     changeDate(aggregate = false){
       if (_.isNull(this.startDate) || _.isNull(this.endDate)){

@@ -22,6 +22,7 @@ class ComicService extends Service{
         "cover_url",
         "release_date",
         "is_draft",
+        'author_split',
     ];
     public $relationships = [
         'chapters',
@@ -50,6 +51,10 @@ class ComicService extends Service{
 
     //     return true;
     // }
+    private function normalizeSplit($splitObj){
+        $sum = array_sum($splitObj);
+        return array_map(function($v)use($sum){return round($v / $sum, 3);}, $splitObj);
+    }
 
     public function saveCoverImage($base64File){
         $file = Uploader::saveBase64File($base64File, 'storage/media/covers/');
@@ -62,8 +67,12 @@ class ComicService extends Service{
                 if(($field == 'tags' || $field == 'genres')
                     && (gettype($data[$field]) == 'array' || gettype($data[$field]) == 'object')){
                     $data[$field] = json_encode(array_values($data[$field]));
-                }
-                if($field === 'release_date'){
+                }else if($field == 'author_split'){
+                    if(gettype($data[$field]) == 'string'){
+                        $data[$field] = json_decode($data[$field], true);
+                    }
+                    $data[$field] = json_encode($this->normalizeSplit($data[$field]));
+                }else if($field === 'release_date'){
                     $data[$field] = Carbon::parse($data[$field]);
                 }
                 $this->data[$field] = $data[$field];

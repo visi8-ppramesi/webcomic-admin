@@ -36,6 +36,7 @@
                       filterable
                       multiple
                       placeholder="Search user"
+                      @change="authorChange"
                     >
                       <el-option
                         v-for="(item,index) in authorListOptions"
@@ -91,6 +92,16 @@
                 </el-col>
               </el-row>
             </div>
+            <el-form-item label-width="80px" label="Author's share of tokens:">
+              <div v-for="(id, index) in postForm.authors" :key="'input-' + index" style="width: 200px; margin-top: 10px; margin-left: 5px; float:left;">
+                <span>Share of {{ lodashFind(authorListOptions, {id: id}).name }}</span>
+                <el-input
+                  v-model="postForm.author_split[id]"
+                  type="input"
+                  :placeholder="'Share of ' + lodashFind(authorListOptions, {id: id}).name"
+                />
+              </div>
+            </el-form-item>
           </el-col>
         </el-row>
         <el-form-item style="margin-bottom: 40px;" label-width="80px" label="Description:">
@@ -353,6 +364,7 @@ const defaultChapterForm = {
 };
 const defaultComicForm = {
   is_draft: false,
+  author_split: {},
   authors: [],
   title: '',
   content: '',
@@ -460,6 +472,16 @@ export default {
     this.tempRoute = Object.assign({}, this.$route);
   },
   methods: {
+    lodashFind(a, b){
+      return _.find(a, b);
+    },
+    authorChange(){
+      // const tempObj = {};
+      // this.postForm.authors.forEach((auth) => {
+      //   tempObj[auth] = 0;
+      // });
+      // this.postForm.author_split = tempObj;
+    },
     tester(){
       console.log(JSON.stringify(this.postForm));
     },
@@ -518,6 +540,7 @@ export default {
           });
           this.postForm.genres = JSON.parse(this.postForm.genres);
           this.postForm.tags = JSON.parse(this.postForm.tags);
+          this.postForm.author_split = JSON.parse(this.postForm.author_split);
           this.postForm.is_draft = false;
           // Just for test
           // this.postForm.title += `   Article Id:${this.postForm.id}`;

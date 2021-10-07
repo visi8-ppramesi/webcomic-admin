@@ -10,6 +10,7 @@ use App\Models\Chapter;
 use App\Models\TokenTransaction;
 use App\Rules\ComicChapter;
 use App\Services\ComicService;
+use Illuminate\Support\Facades\App;
 
 class ComicController extends Controller
 {
@@ -64,6 +65,7 @@ class ComicController extends Controller
     public function store(Request $request, ComicService $comicService)
     {
         $validated = $request->validate([
+            'author_split' => ['array', 'required'],
             'title' => ['string', 'required', 'max:140'],
             'description' => ['string', 'required'],
             'tags' => ['array', 'required'],
@@ -73,6 +75,7 @@ class ComicController extends Controller
             'is_draft' => ['boolean', 'required'],
             'chapters' => [new ComicChapter()]
         ]);
+        return response()->json($validated);
         $created = $comicService->createComicWithChaptersPages($request->all());
 
         return response()->json($created, 200);
@@ -123,6 +126,7 @@ class ComicController extends Controller
     public function update(Request $request, Comic $comic, ComicService $comicService)
     {
         $validated = $request->validate([
+            'author_split' => ['array', 'required'],
             'title' => ['string', 'required', 'max:140'],
             'description' => ['string', 'required'],
             'tags' => ['array', 'required'],
