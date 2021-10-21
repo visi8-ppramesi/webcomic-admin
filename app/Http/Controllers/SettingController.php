@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Setting;
+use App\Models\Setting;
+use App\Services\SettingService;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -69,7 +70,13 @@ class SettingController extends Controller
      */
     public function update(Request $request, Setting $setting)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['required', 'string'],
+            'values' => ['required', 'json']
+        ]);
+
+        $processedValues = SettingService::processValues($validated['name'], $validated['values']);
+        Setting::setValue($validated['name'], $processedValues);
     }
 
     /**
