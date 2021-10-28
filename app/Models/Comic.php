@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Filters\Get;
 use App\Filters\Limit;
 use App\Filters\Search;
+use App\Filters\Select;
 use App\Filters\With;
 use App\Traits\Pipeable;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ class Comic extends Model implements ICommentable
             With::class,
             Limit::class,
             Search::class,
+            Select::class,
         ];
     }
 

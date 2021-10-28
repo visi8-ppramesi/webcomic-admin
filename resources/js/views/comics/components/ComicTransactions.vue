@@ -31,7 +31,7 @@
 
 <script>
 export default {
-  name:'TokenTransactions',
+  name: 'TokenTransactions',
   props: {
     tokenTransactions: {
       type: Object,
@@ -46,13 +46,13 @@ export default {
         paginate: 20,
         with: ['user', 'transactionable'],
         transactions_where_type: 'purchase_comic',
-      }
-    }
+      },
+    };
   },
   methods: {
     getTransactions(){
 
-    }
+    },
   },
-}
+};
 </script>

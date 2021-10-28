@@ -45,9 +45,9 @@ class SettingController extends Controller
      * @param  \App\Setting  $setting
      * @return \Illuminate\Http\Response
      */
-    public function show(Setting $setting)
+    public function show($setting)
     {
-        //
+        return response()->json(Setting::getValue($setting), 200);
     }
 
     /**
@@ -68,7 +68,7 @@ class SettingController extends Controller
      * @param  \App\Setting  $setting
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Setting $setting)
+    public function update(Request $request, $setting)
     {
         $validated = $request->validate([
             'name' => ['required', 'string'],

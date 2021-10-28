@@ -27,6 +27,7 @@ import errorRoutes from './modules/error';
 import permissionRoutes from './modules/permission';
 import tagRoutes from './modules/tag';
 import genreRoutes from './modules/genre';
+import settingRoutes from './modules/setting';
 
 /**
  * Sub-menu only appear when children.length>=1
@@ -170,6 +171,7 @@ export const asyncRoutes = [
   tagRoutes,
   genreRoutes,
   commentRoutes,
+  settingRoutes,
   permissionRoutes,
   // {
   //   path: '/theme',

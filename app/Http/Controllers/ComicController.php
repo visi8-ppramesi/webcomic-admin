@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\App;
 
 class ComicController extends Controller
 {
+    public function justComicIndex(){
+        return response()->json(new JsonResponse([
+            'items' => Comic::pipe()
+        ]));
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -21,6 +27,9 @@ class ComicController extends Controller
      */
     public function index()
     {
+        if(request()->filled('just_comics')){
+            return $this->justComicIndex();
+        }
         $comics = Comic::pipe();
         if(get_parent_class($comics) === 'Illuminate\Pagination\AbstractPaginator'){
             $comics = $comics->getCollection();

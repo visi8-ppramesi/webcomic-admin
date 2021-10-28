@@ -8,6 +8,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TokenTransactionController;
 use App\Http\Resources\UserResource;
@@ -43,6 +44,10 @@ Route::namespace('Api')->group(function() {
         Route::apiResource('roles', 'RoleController')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
         Route::apiResource('users', 'UserController')->middleware('permission:' . Acl::PERMISSION_USER_MANAGE);
         Route::apiResource('permissions', 'PermissionController')->middleware('permission:' . Acl::PERMISSION_PERMISSION_MANAGE);
+
+        Route::get('settings', [SettingController::class, 'index']);
+        Route::get('settings/{setting}', [SettingController::class, 'show']);
+        Route::patch('setting/{setting}', [SettingController::class, 'update']);
 
         // Custom routes
         Route::put('users/{user}', 'UserController@update');
