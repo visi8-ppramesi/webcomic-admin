@@ -161,18 +161,19 @@ export default {
         case 'social': {
           const obj = this.social_media_links.reduce((acc, smObj) => {
             acc[smObj.name] = smObj.link;
+            return acc;
           }, {});
-          settingResource.update('site.social_media_links', obj);
+          settingResource.update('site.social_media_links', { values: obj });
           break;
         }
         case 'banners':
-          settingResource.update('dashboard.banners', this.banners);
+          settingResource.update('dashboard.banners', { values: this.banners });
           break;
         case 'tags':
-          settingResource.update('dashboard.tags', this.tags);
+          settingResource.update('dashboard.tags', { values: this.tags });
           break;
         case 'prices':
-          settingResource.update('token.prices', this.prices);
+          settingResource.update('token.prices', { values: this.prices });
           break;
         default:
           this.saveSetting('social');

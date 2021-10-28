@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Rules\Settings;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 
@@ -71,12 +72,12 @@ class SettingController extends Controller
     public function update(Request $request, $setting)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string'],
-            'values' => ['required', 'json']
+            // 'name' => ['required', 'string'],
+            'values' => ['required', new Settings($setting)]
         ]);
 
-        $processedValues = SettingService::processValues($validated['name'], $validated['values']);
-        Setting::setValue($validated['name'], $processedValues);
+        $processedValues = SettingService::processValues($setting, $validated['values']);
+        return response()->json(Setting::setValue($setting, $processedValues), 200);
     }
 
     /**

@@ -34,7 +34,9 @@ class SettingService extends Service{
                 if(gettype($values) == 'string'){
                     $values = json_decode($values);
                 }
-                $values["image"] = Uploader::saveBase64File($values['image'], 'storage/media/banners/');
+                foreach($values as $key => $banner){
+                    $values[$key]["image"] = Uploader::saveBase64File($values[$key]['image'], 'storage/media/banners/');
+                }
                 return $values;
             case 'token.prices':
                 if(gettype($values) == 'string'){
