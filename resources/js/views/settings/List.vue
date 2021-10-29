@@ -21,7 +21,7 @@
             </el-select>
             <!-- add route params here -->
             <Upload v-model="banners[index].image" />
-            <el-button type="danger" style="margin-left: 10px;" @click="deleteTags">Delete</el-button>
+            <el-button type="danger" style="margin-left: 10px;" @click="deleteBanner(index)">Delete</el-button>
           </el-card>
           <el-button type="success" style="margin-top: 15px;" @click="saveSetting('banners')">Save</el-button>
         </el-tab-pane>
@@ -34,7 +34,7 @@
               style="width: 250px;"
               clearable
             />
-            <el-button type="danger" style="margin-left: 10px;" @click="deleteTags">Delete</el-button>
+            <el-button type="danger" style="margin-left: 10px;" @click="deleteTag(index)">Delete</el-button>
           </el-card>
           <el-button type="success" style="margin-top: 15px;" @click="saveSetting('tags')">Save</el-button>
         </el-tab-pane>
@@ -54,7 +54,7 @@
               style="width: 250px;"
               clearable
             />
-            <el-button type="danger" style="margin-left: 10px;" @click="deletePrices">Delete</el-button>
+            <el-button type="danger" style="margin-left: 10px;" @click="deletePrice(index)">Delete</el-button>
           </el-card>
           <el-button type="success" style="margin-top: 15px;" @click="saveSetting('prices')">Save</el-button>
         </el-tab-pane>
@@ -73,7 +73,7 @@
                   style="width: 350px; padding-top: 15px;"
                 />
               </div>
-              <el-button type="danger" style="margin-top: 10px;" @click="deleteSocialMedia">Delete</el-button>
+              <el-button type="danger" style="margin-top: 10px;" @click="deleteSocialMedia(index)">Delete</el-button>
             </el-card>
             <el-button type="success" style="margin-top: 15px;" @click="saveSetting('social')">Save</el-button>
           </div>
@@ -173,6 +173,15 @@ export default {
           settingResource.update('dashboard.tags', { values: this.tags });
           break;
         case 'prices':
+          this.prices = this.prices.map((price) => {
+            const priceObj = {};
+            if ('special_tag' in price){
+              priceObj.special_tag = price.special_tag;
+            }
+            priceObj.price = +price.price;
+            priceObj.amount = +price.amount;
+            return priceObj;
+          });
           settingResource.update('token.prices', { values: this.prices });
           break;
         default:
@@ -197,6 +206,9 @@ export default {
         image: '',
       });
     },
+    deleteBanner(index){
+      this.banners.splice(index, 1);
+    },
     addNewSocialMedia(){
       this.social_media_links.push({
         name: '',
@@ -208,11 +220,11 @@ export default {
     },
     addPrices(){
       this.prices.push({
-        prices: '',
-        amount: '',
+        price: 0,
+        amount: 0,
       });
     },
-    deletePrices(index){
+    deletePrice(index){
       this.prices.splice(index, 1);
     },
     addTags(){
@@ -220,7 +232,7 @@ export default {
         tags: '',
       });
     },
-    deleteTags(index){
+    deleteTag(index){
       this.tags.splice(index, 1);
     },
     handleClick(tab, event) {

@@ -35,7 +35,8 @@ class SettingService extends Service{
                     $values = json_decode($values);
                 }
                 foreach($values as $key => $banner){
-                    $values[$key]["image"] = Uploader::saveBase64File($values[$key]['image'], 'storage/media/banners/');
+                    $file = Uploader::saveBase64File($values[$key]['image'], 'storage/media/banners/');
+                    $values[$key]["image"] = $file['pathname'];
                 }
                 return $values;
             case 'token.prices':
