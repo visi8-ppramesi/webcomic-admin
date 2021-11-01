@@ -35,7 +35,14 @@ class SettingService extends Service{
                     $values = json_decode($values);
                 }
                 foreach($values as $key => $banner){
-                    $file = Uploader::saveBase64File($values[$key]['image'], 'storage/media/banners/');
+                    $checkType = self::checkFileType($values[$key]['image']);
+                    if($checkType == 'data_uri'){
+                        $file = Uploader::saveBase64File($values[$key]['image'], 'storage/media/banners/');
+                    }else if($checkType == 'url'){
+                        $file = ['pathname' => $values[$key]['image']];
+                    }else{
+                        abort(400, "Bad request!");
+                    }
                     $values[$key]["image"] = $file['pathname'];
                 }
                 return $values;
